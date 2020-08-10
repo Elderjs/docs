@@ -407,26 +407,35 @@ Hooks can add items to the stack, when the stack is processed it is sorted in or
 
 ## Plugins: Bundles of Hooks that Add Functionality
 
-> Launch Note: As of this initial release plugins have been tested in the `./src/plugins/` folder but since we don't have any public plugins YET, we haven't been able to confirm they work from node_modules.
-
 Plugins are prepackaged hooks and/or routes that can be used to add additional functionality to an `Elder.js` site.
 
 Plugins also have the added bonus of having **their own isolated closure scope where they can store data between hooks invocations**.
 
-To use a plugin, it must be registered in your `elder.config.js` and can be loaded from `./src/plugins/${pluginName}/index.js` or `./node_modules/${pluginName}/index.js`
+To use a plugin, it must be registered in your `elder.config.js` and can be loaded from `./src/plugins/${pluginName}/index.js` or from the entry point to an npm package `./node_modules/${pluginName}/`
 
-### Use Cases for Plugins
+### Offical Plugins:
 
-* Want to use Elder.js to read your markdown files? Perfect usec ase for a plugin. (coming soon)
-* Want to upload your statically generated files to S3? Perfect use case for a plugin. (official package coming soon)
-* Want to generate a sitemap for all of your pages after building? Plugin material. (coming soon)
-
-**Other ideas:**
-* Read all images in the project, compress them, cache them locally, and make them available to templates.
-* Robots.txt plugin
-* RSS feed plugin
+* [Critical Path CSS](https://github.com/Elderjs/plugins/tree/master/packages/critical-path-css) Quickly and easily generate and include critical path css for your Elder.js website.
+* [Sitemap](https://github.com/Elderjs/plugins/tree/master/packages/sitemap) Automatically generate the latest sitemap for your Elder.js website on build.
 * Want to randomly preview a page from any route. (coming soon) (We've found this incredibly valuable when building sites with 15k+ pages of a specific route.)
 
+### Other Plugin Ideas:
+
+* Want to use Elder.js to read your markdown files? Perfect usec ase for a plugin. ([example implementation](https://github.com/Elderjs/template/blob/master/src/plugins/elderjs-plugin-markdown/index.js))
+* Want to upload your statically generated files to S3? Perfect use case for a plugin. (See plugin example below)
+* Read all images in the project, compress them, cache them locally, and make them available to templates.
+* RSS feed plugin
+
+### Writing Your Own Plugin
+
+If you're looking to write you own plugin for Elder.js, [we've setup an easy template to clone](https://github.com/Elderjs/plugins/).
+
+Here is the command you can use to clone it locally without all of the git history using degit.
+
+```bash
+npx degit Elderjs/plugin-template elderjs-plugin
+cd elderjs-plugin
+```
 
 ### Plugin Example 1: S3 Upload
 
