@@ -404,7 +404,7 @@ Hooks can add items to the stack, when the stack is processed it is sorted in or
 
 
 
-## Plugins: Bundles of Hooks that Add Functionality
+## Plugins
 
 Plugins are prepackaged hooks and/or routes that can be used to add additional functionality to an `Elder.js` site.
 
@@ -412,7 +412,7 @@ Plugins also have the added bonus of having **their own isolated closure scope w
 
 To use a plugin, it must be registered in your `elder.config.js` and can be loaded from `./src/plugins/${pluginName}/index.js` or from the entry point to an npm package `./node_modules/${pluginName}/`
 
-### Offical Plugins:
+### Official Plugins:
 
 * [Critical Path CSS](https://github.com/Elderjs/plugins/tree/master/packages/critical-path-css) Quickly and easily generate and include critical path css for your Elder.js website.
 * [Sitemap](https://github.com/Elderjs/plugins/tree/master/packages/sitemap) Automatically generate the latest sitemap for your Elder.js website on build.
@@ -456,7 +456,7 @@ const plugin: PluginOptions = {
   },
   hooks: [
     {
-      hook: 'dataComplete',
+      hook: 'requestComplete',
       name: 'uploadDataObjectToS3',
       description: 'Uploads a data.json file to s3',
       priority: 100, // we want it to be last
