@@ -377,6 +377,8 @@ While this requirement may seem like an added development burden initially, it m
 
 These fields are also used to generate the pretty pretty printouts of how long each hook is adding to your page generation time that you see when you enable `debug.performance = true` in your `elder.config.js`.
 
+<img src="https://elderguide.com/images/performance-debug-true.png" alt="Elder.js Performance Debug True" style="max-width:100%; margin: 1rem 0;" />
+
 As a team we've found build times to be especially important when building 10k+ page sites as 100ms adds 16+ minutes to your build time. What gets measured gets managed... and we know faster deploys leads to deploying more often.
 
 ### Stacks: Predictable String Concatenation
