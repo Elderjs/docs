@@ -204,6 +204,11 @@ This allows Elder.js to enforce the [`hookInterface.ts`](https://github.com/Elde
 It also keeps hooks/plugins that are shared publicly from doing unexpected things.
 
 
+### Hook Lifecycle
+
+<img src="https://elderguide.com/images/elderjs-hook-lifescyle.png" alt="Elder.js hook Lifecycle" style="max-width:100%; margin:1rem 0;" />
+
+
 {{output_hook_list}}
 
 
