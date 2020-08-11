@@ -39,7 +39,7 @@ npm install # or just yarn
 npm start
 ```
 
-Navigate to [localhost:3000](http://localhost:3000). You should see your app running.
+Navigate to <a href="localhost:3000" rel="nofollow">http://localhost:3000</a>. You should see your app running.
 
 ### Developing using the Template:
 
