@@ -2,6 +2,9 @@
 
 Elder.js is an opinionated static site generator and web framework built with SEO in mind. Supports SSR and Static Site Generation.
 
+**Note:** Elder.js is currently in beta but approaching v1.0.0 quickly. (This site runs on it.)
+
+
 **Features:**
 
 * Svelte on the server and the client. (Full SSR support or Static Export)
@@ -10,7 +13,6 @@ Elder.js is an opinionated static site generator and web framework built with SE
 * Fully customizable with hooks / plugins.
 * Built with SEO in mind.
 * Intuitive defaults.
-* Typescript support.
 * Easy partial hydration of Svelte components for tiny bundle/html sizes.
 
 
@@ -206,7 +208,7 @@ It also keeps hooks/plugins that are shared publicly from doing unexpected thing
 
 ### Hook Lifecycle
 
-<img src="https://elderguide.com/images/elderjs-hook-lifescyle-split.png" alt="Elder.js hook Lifecycle" style="max-width:100%; margin:1rem 0;" />
+<img src="https://elderguide.com/images/elderjs-hook-lifescyle-v3.png" alt="Elder.js hook Lifecycle" style="max-width:100%; margin:1rem 0;" />
 
 
 {{output_hook_list}}
