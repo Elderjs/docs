@@ -41,6 +41,8 @@ npm start
 
 Navigate to <a href="localhost:3000" rel="nofollow">http://localhost:3000</a>. You should see your app running.
 
+To see a preview visit: [https://elderjs.netlify.app/](https://elderjs.netlify.app/)
+
 ### Developing using the Template:
 
 For development, we recommend running two separate terminals. One for the server and the other for rollup.
