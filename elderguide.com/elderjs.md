@@ -206,7 +206,7 @@ It also keeps hooks/plugins that are shared publicly from doing unexpected thing
 
 ### Hook Lifecycle
 
-<img src="https://elderguide.com/images/elderjs-hook-lifescyle-2.png" alt="Elder.js hook Lifecycle" style="max-width:100%; margin:1rem 0;" />
+<img src="https://elderguide.com/images/elderjs-hook-lifescyle-split.png" alt="Elder.js hook Lifecycle" style="max-width:100%; margin:1rem 0;" />
 
 
 {{output_hook_list}}
