@@ -120,7 +120,7 @@ How this works, is that for each `route` Elder.js:
 
 Once it has gathered all of the permalinks, Elder.js now has a complete map of every page it should build or handle SSR for. 
 
-This approach was chosen to give the user complete control of their URL structure instead of being bound by the limtations of being able to determine a route solely by a URL.
+This approach was chosen to give the user complete control of their URL structure instead of being bound by the limitations of being able to determine a route solely by a URL.
 
 
 
@@ -176,7 +176,7 @@ Just about anything you can do in Node.js you can do in a data.js file.
 
 That said, one of the most common things a data file will need to do is to connect to a remote data store. 
 
-The recommended way of setting up that connection is [to populate the `query` object on the `bootstrap` hook](todo).
+The recommended way of setting up that connection is [to populate the `query` object on the `bootstrap` hook](http://localhost:4020/dev/tech/elderjs/#hook-example-1-bootstrap).
 
 Using this pattern allows you to share a database connection across the entire lifecycle of your Elder.js site.
 
@@ -189,10 +189,6 @@ For a full overview of the hooks available, you can reference the [hookInterface
 
 In short there is a hook at every major step of the page generation process from system bootstrap  (the `bootstrap` hook) all the way to writing html to your computer (on the `requestComplete` hook).
 
-
-{{output_hook_list}}
-
-
 ### Hook Interface: the `mutable` and `props` Arrays
 
 For each hook there are two arrays defined. `props` and `mutable` this defines the "contract" that the hook interface implements.
@@ -201,11 +197,14 @@ In short, `props` represents the parameters that are available and `mutable` rep
 
 This structure was implemented to keep all side effects limited and predictable.
 
-Under the hood, all items in the `props` array that aren't in the `mutable` array are passed as a Proxy.[link]
+Under the hood, all items in the `props` array that aren't in the `mutable` array are passed as a [Proxy](https://javascript.info/proxy).
 
-This allows Elder.js to enforce the `hookInterface.ts` contract.
+This allows Elder.js to enforce the [`hookInterface.ts`](https://github.com/Elderjs/elderjs/blob/master/src/hookInterface/hookInterface.ts) contract.
 
-It also keeps hooks/plugins that are shared publicly from doing unexpected things. (A huge problem in the WordPress community).
+It also keeps hooks/plugins that are shared publicly from doing unexpected things.
+
+
+{{output_hook_list}}
 
 
 
@@ -284,12 +283,12 @@ Let's say your team was using Elder Guide for SSR and wanted to add an arbitrary
 * **Naming here is important, do not overwrite / shadow any of the props in Elder.ts**
 * While it may be tempting to offer this functionality to plugins it is not available because plugins should be side effect free.
 * If you are looking to store data or custom data points for your plugin, look at the `init()` function on the plugin definition as you can use that closure to store data that is plugin specific between hook invocations.
-* At this point there is no way to add additional hooks to the system. In the future we may add the ability for plugins to define their own hooks which would shadow system hooks. If you think a hook is needed that you don't see, open a PR and please detail it's usecase.
+* At this point there is no way to add additional hooks to the system. In the future we may add the ability for plugins to define their own hooks which would shadow system hooks. If you think a hook is needed that you don't see, open a PR and please detail it's use case.
 
 
 
-## Specifications
-Below are co
+## Specifications and Config
+Below are details on common specifications and config requirements. 
 
 ### Config: `elder.config.js`
 
@@ -380,7 +379,7 @@ These fields are also used to generate the pretty pretty printouts of how long e
 
 As a team we've found build times to be especially important when building 10k+ page sites as 100ms adds 16+ minutes to your build time. What gets measured gets managed... and we know faster deploys leads to deploying more often.
 
-### Stacks: Predictable String Concatination
+### Stacks: Predictable String Concatenation
 
 In a few places you may see that Elder.js is using 'stacks.' These are just our internal way of processing strings that need to be concatenated. 
 
@@ -421,7 +420,7 @@ To use a plugin, it must be registered in your `elder.config.js` and can be load
 
 ### Other Plugin Ideas:
 
-* Want to use Elder.js to read your markdown files? Perfect usec ase for a plugin. ([example implementation](https://github.com/Elderjs/template/blob/master/src/plugins/elderjs-plugin-markdown/index.js))
+* Want to use Elder.js to read your markdown files? Perfect use case for a plugin. ([example implementation](https://github.com/Elderjs/template/blob/master/src/plugins/elderjs-plugin-markdown/index.js))
 * Want to upload your statically generated files to S3? Perfect use case for a plugin. (See plugin example below)
 * Read all images in the project, compress them, cache them locally, and make them available to templates.
 * RSS feed plugin
@@ -570,17 +569,15 @@ The important thing to note is that still use Svelte variables in `hydrate-clien
 
 ## Why We Built Elder.js
 
-When we set out to build elderguide.com[link] we tested 6 different static site generators (Gatsby, Next.js, Nuxt.js, 11ty, Sapper and Hydrogen.js) and ultimately realized there wasn’t a solution that ticked all of our boxes.
+When we set out to build elderguide.com we tested 6 different static site generators (Gatsby, Next.js, Nuxt.js, 11ty, Sapper and Hydrogen.js) and ultimately realized there wasn’t a solution that ticked all of our boxes.
 
 On our journey we had 3 major realizations:
 
-1 — The only SSG to support Svelte was Sapper the other most mature JS alternatives (Gatsby, Next.js, Nuxt.js) are all tightly coupled with React/Vue. Since we were Svelte we were 100% sold on Svelte’s excellent developer experience and tiny bundle sizes as the answer for SEO sites.
+1. The only SSG to support Svelte was Sapper the other most mature JS alternatives (Gatsby, Next.js, Nuxt.js) are all tightly coupled with React/Vue. This was a bummer as we loved the amazing developer experience Svelte offers.
+1. Most SSGs are built for either simple sites/blogs or for full scale "app frameworks" that have added an 'export' process added as an after thought.
+1. Client side routing adds a huge amount of complexity (and bundle size) to initial loads for very little SEO benefit. If you aren’t building an App, why would we want to fully hydrate our JS framework just for faster routing? Browsers a great at routing… we should only be hydrating things that need to be hydrated.
 
-2 — Most SSGs are built for simple sites/blogs or are app frameworks with an 'export' process added as an after thought. Reading markdown files from a folder wasn’t our core use case and while our site was going to have some interactivity it wasn’t an app.
-
-3 — Client side routing adds a huge amount of complexity (and bundle size) to initial loads for very little SEO benefit. If you aren’t building an App, why would you want to fully hydrate our JS framework just for faster routing? Browsers a great at routing… we should only be hydrating things that need to be hydrated.
-
-After our testing we decided to go with Sapper but ultimately hit the roadblocks outlined below.
+After our testing we decided to go with Sapper but ultimately hit some roadblocks.
 
 This led us to the decision of rewriting all of our Svelte components to React/Vue or finding a different SSG.
 
@@ -590,11 +587,10 @@ Over the following 6 months as we pushed the site towards production, we used th
 
 We launched to production with a mix of `lit-html` with a few helper functions to hydrate/ssr Svelte components mixed in.
 
-While we had always planned on refactoring once we hit production, a moment of genius from @kev [link] in the Svelte discord prompted a major breakthrough that allowed us to use Svelte 100% for templating and still get partial hydration even thought Svelte doesn’t support it.
+While we had always planned on refactoring once we hit production, a moment of genius from [@kev](https://github.com/kevmodrome) in the Svelte discord prompted a major breakthrough that allowed us to use Svelte 100% for templating and still get partial hydration even thought Svelte doesn’t support it.
 
 Excited we completely completely rewrote our system to take advantage of this breakthrough and add in easy plugin/customization support so anyone could use it to build sites.
 
-Along the way we set an ambitious goal of making it as beginner friendly as possible. We think the solution we've packaged up in Elder.js is a great answer to the SSG problem.
 
 
 
@@ -613,7 +609,8 @@ Instead of burying this magic, things that happen automagically are logged to th
 
 ## Default Helpers
 
- Permalink resolver: `helpers.permalink[routeName]()`. Simply pass in a request object and it'll resolve the permalink.
+* Permalink resolver: `helpers.permalink[routeName]()`. Simply pass in a request object and it'll resolve the permalink.
+* `link`in templates. TODO.
 
 
 
@@ -672,13 +669,9 @@ Sapper is a full stack Svelte framework that does server site rendering and supp
 
 While we found Sapper to be a nice solution for small sites, when we tried to use it to build out elderguide.com we hit some major roadblocks:
 
-1 — V1 of our internal test site had about ~500 pages. Sapper was talking about 15 minutes to build our site and we had worked hard to improve that speed. Since we knew our site would have over 100k pages in the coming years we knew we needed a different solution.
-
-2 — Sapper uses a file encoded routing system. This means that /blog/[id]/ becomes /blog/:id/.  While this type of routing is common in JS frameworks there are several SEO reasons you may want content of different types to live within the same subfolder.
-
-(In our specific use case we wanted /senior-living/[content]/, /senior-living/[facilities]/, and /senior-living/[experts]/ to all live under /senior-living/. When you're planning on building a 100k page site over 5 years, early decisions matter. Especially for SEO as each permalink change adds a bit of 'drag.')
-
-3 — We found Sapper’s data flow hard to reason about for data driven and complex sites.
+1. V1 of our internal test site had about ~500 pages. Sapper was talking about 15 minutes to build our site and we had worked hard to improve that speed. Since we knew our site would have over 100k pages in the coming years we knew we needed a different solution.
+1. Sapper uses a file encoded routing system. This means that /blog/[id]/ becomes /blog/:id/.  While this type of routing is common in JS frameworks there are several SEO reasons you may want content of different types to live within the same subfolder. (In our specific use case we wanted /senior-living/[content]/, /senior-living/[facilities]/, and /senior-living/[experts]/ to all live under /senior-living/. When you're planning on building a 100k page site over 5 years, early decisions matter. Especially for SEO as each permalink change adds a bit of 'drag.')
+1. We found Sapper’s data flow hard to reason about for data driven and complex sites.
 
 For data fetching Sapper uses a `preload` function to fetch a page’s initial props and build the page. This is done to enable client side routing and full client side hydration as this preload function is designed to run on both the client and the server.
 
@@ -686,12 +679,9 @@ This is a pretty cool feature for Apps but for a static SEO focused site it was 
 
 Elder.js solves these roadblocks.
 
-1 — Build times on our ~20k page side are between 8-9.5 minutes and constantly hovers between 28-40 pages per second on 6 core VM. In our analysis over 55% of our build time is spent waiting on the database server so you may see much faster builds. :)
-
-2 — You can setup the routes however you need. The only requirement is that you don’t have two routes with the same url. :)  (We’ll tell you if is happens)
-
-3 — Every route defined has a single `data.js` where you can do your database queries, read markdown files, and do whatever magic you need to prepare your data for display.
-
+1. Build times on our ~20k page site are routinely less than 10 minutes on a modest VM. In our analysis over 55% of our build time is spent waiting on the database server so you may see much faster builds. :)
+1. You can setup the routes however you need. The only requirement is that you don’t have two routes with the same url. :)  (We’ll tell you if is happens)
+1. Every route defined has a single `data.js` where you can do your database queries, read markdown files, and do whatever magic you need to prepare your data for display.
 
 
 ### Adding Database Access
