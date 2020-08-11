@@ -184,7 +184,7 @@ Just about anything you can do in Node.js you can do in a data.js file.
 
 That said, one of the most common things a data file will need to do is to connect to a remote data store. 
 
-The recommended way of setting up that connection is [to populate the `query` object on the `bootstrap` hook](http://localhost:4020/dev/tech/elderjs/#hook-example-1-bootstrap).
+The recommended way of setting up that connection is [to populate the `query` object on the `bootstrap` hook](https://elderguide.com/tech/elderjs/#hook-example-1-bootstrap).
 
 Using this pattern allows you to share a database connection across the entire lifecycle of your Elder.js site.
 
@@ -701,7 +701,7 @@ Elder.js solves these roadblocks.
 
 ### Adding Database Access
 
-If your project is going to be querying it’s data from a database we recommend using the bootstrap hook and adding a connection to your database on the “query” property. [See this hook example above](http://localhost:4020/dev/tech/elderjs/#hook-example-1-bootstrap).
+If your project is going to be querying it’s data from a database we recommend using the bootstrap hook and adding a connection to your database on the “query” property. [See this hook example above](https://elderguide.com/tech/elderjs/#hook-example-1-bootstrap).
 
 
 
