@@ -59,10 +59,16 @@ npm run dev:rollup # This rebuilds your svelte components on change.
 
 Once you have these two terminals open, edit a component file in `src`, save it, and reload the page to see your changes.
 
-### To Build HTML:
+### To Build/Serve HTML:
 
 ```bash
 npm run build
+```
+
+Let the build finish.
+
+```bash
+npx sirv-cli public
 ```
 
 
