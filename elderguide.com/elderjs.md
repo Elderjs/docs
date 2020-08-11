@@ -20,6 +20,8 @@ Elder.js is an opinionated static site generator and web framework built with SE
 
 The quickest way to get started is to get started with the Elder.js template using [degit](https://github.com/Rich-Harris/degit):
 
+Here is a demo of the template: [https://elderjs.netlify.app/](https://elderjs.netlify.app/)
+
 **Step 1: Clone Template**
 
 ```bash
@@ -40,8 +42,6 @@ npm start
 ```
 
 Navigate to <a href="localhost:3000" rel="nofollow">http://localhost:3000</a>. You should see your app running.
-
-To see a preview visit: [https://elderjs.netlify.app/](https://elderjs.netlify.app/)
 
 ### Developing using the Template:
 
