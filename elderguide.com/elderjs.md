@@ -56,7 +56,7 @@ Navigate to <a href="localhost:3000" rel="nofollow">http://localhost:3000</a>. Y
 
 For development, we recommend running two separate terminals. One for the server and the other for rollup.
 
-**Terminal 1: Sever**
+**Terminal 1: Server**
 
 ```bash
 npm run dev:server # `npm start` above starts a server, but doesn't rebuild your Svelte components on change.
