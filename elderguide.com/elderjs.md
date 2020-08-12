@@ -4,8 +4,6 @@
 
 [Elder.js](https://github.com/elderjs/elderjs) is an opinionated static site generator and web framework built with SEO in mind. (Supports SSR and Static Site Generation.)
 
-Elder.js is the result of our team's work to build this site ([ElderGuide.com](https://elderguide.com)) and was purpose built to solve the unique challenges of building flagship SEO sites with 10-100k+ pages. 
-
 **Note:** Elder.js is used by this site and several others, but it is a relatively new open source project so we're calling this release a 'beta' release and will be approaching v1.0.0 quickly.
 
 
@@ -19,6 +17,8 @@ Elder.js is the result of our team's work to build this site ([ElderGuide.com](h
 
 
 **Context** 
+
+Elder.js is the result of our team's work to build this site ([ElderGuide.com](https://elderguide.com)) and was purpose built to solve the unique challenges of building flagship SEO sites with 10-100k+ pages. 
 
 Elder Guide co-Founder [Nick Reese](https://nicholasreese.com) has built or managed 5 major SEO properties over the past 14 years. After leading the transition of several complex sites to static site generators he loved the benefits of the JAM stack, but wished there was a better solution for complex, data intensive, projects. Elder.js is his vision for how static site generators can become viable for sites of all sizes regardless of the number of pages or how complex the data being presented is.
 
