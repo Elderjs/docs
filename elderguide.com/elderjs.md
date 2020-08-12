@@ -107,6 +107,9 @@ Here is what a route for a website's homepage might look like it's simplest form
 module.exports = {
   all: async () => [{ slug: '/' }], // an array of request objects.
   permalink: ({ request, settings }) => request.slug, // a sync function that turns request objects into relative urls. 
+
+  // template: 'Home.svelte' is assumed if not defined. (note: capitalized first letter.)
+  // layout: 'Layout.svelte' is assumed if not defined. 
 };
 ```
 
@@ -150,8 +153,8 @@ Here is the function signature for a `route.js` all function:
 
 ```javascript
 {
-  all: async ({ settings, query, data}): Array<Object> => {
-    // settings: this describes the Elder.js bootstrap settings.
+  all: async ({ settings, query, data, helpers }): Array<Object> => {
+    // settings: this describes the Elder.js settings at initialization.
     // query: an empty object that is usually populated on the 'bootstrap' hook with a database connection or api connection. This is sharable throughout all hooks and functions.
     // data: any data set on the 'bootstrap' hook.
     return Array<Object>;
@@ -289,6 +292,120 @@ That said, one of the most common things a data file will need to do is to conne
 The recommended way of setting up that connection is [to populate the `query` object on the `bootstrap` hook](https://elderguide.com/tech/elderjs/#hook-example-1-bootstrap).
 
 Using this pattern allows you to share a database connection across the entire lifecycle of your Elder.js site.
+
+
+## Data Flow
+
+Here is a detailed overview of how data flows through an Elder.js application.
+
+### 1. Everything starts in a site's route.js files
+
+```javascript
+// `/routes/blog/route.js` <-- NOTE: 'blog' is the route name.
+module.exports = {
+	all: async ({ query, settings data, helpers }) =>{
+		// await query.db(`your implementation here`) or await query.api(`get data`);
+    // something that returns an array of the minimum required data for the route.
+    return [{slug: 'why-kitten-rock'}];
+	},
+  permalink: ({ request, settings}) => {
+    return `/blog/${request.slug}/`;
+  }
+
+  // template: 'Blog.svelte' is assumed if not defined. (note: capitalized first letter.)
+  // layout: 'Layout.svelte' is assumed if not defined. 
+}
+```
+
+### 2. Elder.js bootstrap itself
+
+During this process Elder.js validates all of the routes, then executes the `all` function of each route.
+
+Together the aggregate result of these functions is referred to as `allRequests`.
+
+### 3. The `allRequests` Hook is Run
+
+This allows users to modify the `allRequests` array.
+
+### 4. Full 'request' Objects are Built
+
+Once Elder.js has a full list of requests, it then build permalinks and full 'request' objects that will be consumed by hooks, `data.js` files, Svelte templates, and Svelte layouts.
+
+The full request object will look something like so (truncated for clarity):
+
+```javascript
+request = {
+	slug: `why-kittens-rock`,
+  // ... any other keys from the `request` object returned from the `all` function.
+
+  // below is then added by Elder.js
+  permalink: '/blog/why-kittens-rock',
+	route: 'blog', 
+  type: 'build', // server or build.
+}
+
+```
+
+It is important to note that all of the params of the 'request' objects returned by the `all` function will be present the 'request' object even though our example only uses `slug`.
+
+### 5. Hooks are Executed Until the `data.js` is Run
+
+The data flows through all of the hooks until it reaches a route's `data.js` file.
+
+How you modify the data in your data.js file is up to you. Anything you can do in Node.js you can do here.
+
+It is important to know that the `data` parameter that is passed to this function may not be empty. If you simply `return yourData` then you may get unexpected outcomes from plugins or hooks.
+
+```javascript
+module.exports = async ({ query, settings, request, data }) => {
+  // do magic to get data from your data store.
+  // const externalData = await query.db(`SELECT * FROM city WHERE slug = $1, [request.slug])
+  // or
+  // const externalData = await query.api.get(`https://yourdata.com/api/city/${requre.slug}`)...
+  return {
+    ...data,
+    ...externalData
+  }
+};
+```
+
+### 6. The 'data' hook is Executed
+
+The data hook is generally used by plugins to modify data for a route. 
+
+If for some reason you have an empty data object, check that your plugins and hooks aren't returning just their data, instead of using a pattern like so:
+
+```javascript
+  return {
+    data: {
+      ...data, // this is from the parameter of the hook function.
+      ...additionalData // this data from the hook or plugin.
+    }
+  }
+```
+
+### 7. The data Object is passed to the Svelte template
+
+In this example, `./src/routes/blog/Blog.svelte` may look like this:
+
+```javascript
+<script>
+  export let data; // here is the 'data' object we've been following.
+  export let settings; // Elder.js settings
+  export let helpers; // Elder.js helpers and user helpers.
+  export let request; // 'request' object from above.
+
+  ....
+</script>
+```
+
+### 8. The HTML returned by Blog.svelte is passed into Layout.svelte
+
+Svelte layouts receive the same props as the template file but also include a `routeHTML` prop which would be the html from `Blog.svelte` in this example.
+
+### 9. Page Generation Completes
+
+All further hooks are run until the 'request' has been completed.
 
 
 ## Hooks: How to Customize Elder.js
@@ -689,11 +806,13 @@ When we set out to build elderguide.com we tested 6 different static site genera
 
 On our journey we had 3 major realizations:
 
-1. The only SSG to support Svelte was Sapper the other most mature JS alternatives (Gatsby, Next.js, Nuxt.js) are all tightly coupled with React/Vue. This was a bummer as we loved the amazing developer experience Svelte offers.
 1. Most SSGs are built for either simple sites/blogs or for full scale "app frameworks" that have added an 'export' process added as an after thought.
+1. A fetching data from multiple sources (dbs, apis, config files, markdown files) lead to major code spaghetti.
 1. Client side routing adds a huge amount of complexity (and bundle size) to initial loads for very little SEO benefit. If you aren’t building an App, why would we want to fully hydrate our JS framework just for faster routing? Browsers a great at routing… we should only be hydrating things that need to be hydrated.
 
-After our testing we decided to go with Sapper but ultimately hit some roadblocks.
+Further, all of the mature JS alternatives (Gatsby, Next.js, Nuxt.js) are all tightly coupled with React/Vue. This was a bummer as we loved the amazing developer experience Svelte offers. 
+
+After our testing we decided to go with Sapper as we really wanted to work with Svelte but ultimately hit some roadblocks.
 
 This led us to the decision of rewriting all of our Svelte components to React/Vue or finding a different SSG.
 
