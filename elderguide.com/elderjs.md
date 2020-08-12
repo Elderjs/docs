@@ -305,12 +305,12 @@ Below is the example `route.js` file we'll be following the flow of.
 ```javascript
 // `/routes/blog/route.js` <-- NOTE: 'blog' is the route name.
 module.exports = {
-  all: async ({ query, settings data, helpers }) =>{
-		// await query.db(`your implementation here`) or await query.api(`get data`);
+  all: async ({ query, settings data, helpers }) => {
+    // await query.db(`your implementation here`) or await query.api(`get data`);
     // something that returns an array of the minimum required data for the route.
     return [{slug: 'why-kitten-rock'}];
-	},
-  permalink: ({ request, settings}) => {
+  },
+  permalink: ({ request, settings }) => {
     return `/blog/${request.slug}/`;
   }
 
@@ -363,12 +363,12 @@ It is important to know that the `data` parameter that is passed to this functio
 ```javascript
 module.exports = async ({ query, settings, request, data }) => {
   // do magic to get data from your data store.
-  // const externalData = await query.db(`SELECT * FROM city WHERE slug = $1, [request.slug])
+  // const yourData = await query.db(`SELECT * FROM city WHERE slug = $1, [request.slug])
   // or
-  // const externalData = await query.api.get(`https://yourdata.com/api/city/${requre.slug}`)...
+  // const yourData = await query.api.get(`https://yourdata.com/api/city/${requre.slug}`)...
   return {
     ...data,
-    ...externalData
+    ...yourData
   }
 };
 ```
