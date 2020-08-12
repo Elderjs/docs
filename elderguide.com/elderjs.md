@@ -105,7 +105,7 @@ Here is what a route for a website's homepage might look like it's simplest form
 ```javascript
 // ./src/routes/home/route.js
 module.exports = {
-  all: async () => [{ slug: '/' }], // an array of request objects.
+  all: async () => [{ slug: '/' }], // an array of request objects. A slug is required for each.
   permalink: ({ request, settings }) => request.slug, // a sync function that turns request objects into relative urls. 
 
   // template: 'Home.svelte' is assumed if not defined. (note: capitalized first letter.)
@@ -296,14 +296,16 @@ Using this pattern allows you to share a database connection across the entire l
 
 ## Data Flow
 
-Here is a detailed overview of how data flows through an Elder.js application.
+Here is a detailed overview of how data flows through an Elder.js application from 'bootstrap' all the way to a generated HTML page.
 
 ### 1. Everything starts in a site's route.js files
+
+Below is the example `route.js` file we'll be following the flow of.
 
 ```javascript
 // `/routes/blog/route.js` <-- NOTE: 'blog' is the route name.
 module.exports = {
-	all: async ({ query, settings data, helpers }) =>{
+  all: async ({ query, settings data, helpers }) =>{
 		// await query.db(`your implementation here`) or await query.api(`get data`);
     // something that returns an array of the minimum required data for the route.
     return [{slug: 'why-kitten-rock'}];
@@ -317,15 +319,17 @@ module.exports = {
 }
 ```
 
-### 2. Elder.js bootstrap itself
+### 2. Elder.js Bootstrap Itself
 
-During this process Elder.js validates all of the routes, then executes the `all` function of each route.
+During this process Elder.js validates all of the routes, plugins, hooks. It then runs the 'bootstrap' hook.
 
-Together the aggregate result of these functions is referred to as `allRequests`.
+Finally the `all` function each route is executed.
+
+Together the aggregate result of each route's `all` function is referred to as `allRequests`.
 
 ### 3. The `allRequests` Hook is Run
 
-This allows users to modify the `allRequests` array.
+This allows users to modify the `allRequests` array. If you modify or add to this array of objects make sure each result has a 'request.route' key.
 
 ### 4. Full 'request' Objects are Built
 
@@ -405,7 +409,9 @@ Svelte layouts receive the same props as the template file but also include a `r
 
 ### 9. Page Generation Completes
 
-All further hooks are run until the 'request' has been completed.
+All further hooks are run until the 'request' has been completed. 
+
+This includes user hooks, system hooks, and plugin hooks.
 
 
 ## Hooks: How to Customize Elder.js
@@ -494,6 +500,8 @@ Hooks can be defined in 3 places in your project.
 **SYSTEM HOOKS:**
 
 Under the hood, all of the hooks Elder.js runs are defined in the [@elderjs/elderjs `./src/hooks.ts`](https://github.com/Elderjs/elderjs/blob/master/src/hooks.ts).
+
+{{todo: output_system_hooks}}
 
 ### Advanced: Customizing the Hook Interface
 
