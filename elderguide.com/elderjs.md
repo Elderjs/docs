@@ -92,7 +92,7 @@ In Elder.js a **route** is made up of 3 files that live in your route folder: `.
 They are:
 
 1. A `route.js` file. This is where you define route details such as the route’s `permalink` function and `all.` function. 
-1. A data.js file where you define what data the template should get.
+1. A `data.js` file where you define what data the template should get.
 1. A Svelte component to be used as a template matches the `${routeName}`. eg: `./src/routes/blog/Blog.svelte` (from here on out we refer to these specific Svelte components as "Svelte Templates")
 
 
