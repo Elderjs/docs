@@ -1,22 +1,28 @@
 # Elder.js: An Opinionated, SEO focused, Svelte Framework.
 
-[Elder.js](https://github.com/elderjs/elderjs) is an opinionated static site generator and web framework built with SEO in mind. Supports SSR and Static Site Generation.
-
 <a class="github-button" href="https://github.com/elderjs/elderjs" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star elderjs/elderjs on GitHub">Star</a>
 
+[Elder.js](https://github.com/elderjs/elderjs) is an opinionated static site generator and web framework built with SEO in mind. (Supports SSR and Static Site Generation.)
 
-**Note:** Elder.js is currently in beta but approaching v1.0.0 quickly. (This site runs on it.)
+Elder.js is the result of our team's work to build this site ([ElderGuide.com](https://elderguide.com)) and was purpose built to solve the unique challenges of building flagship SEO sites with 10-100k+ pages. 
+
+**Note:** Elder.js is used by this site and several others, but it is a relatively new open source project so we're calling this release a 'beta' release and will be approaching v1.0.0 quickly.
 
 
 **Features:**
 
-* Svelte on the server and the client. (Full SSR support or Static Export)
-* Dead simple data flow.
-* Fast static site generation.
-* Fully customizable with hooks / plugins.
-* Built with SEO in mind.
-* Intuitive defaults.
-* Easy partial hydration of Svelte components for tiny bundle/html sizes.
+* [**Build hooks**](https://elderguide.com/tech/elderjs/#hooks-how-to-customize-elderjs) allow you to plug into any part of entire page generation process and build process and customize as needed.
+* **A Highly Optimized Build Process:** that will span as many CPU cores as you can throw at it to make building your site as fast as possible. For reference Elder.js easily generates a data intensive 18,000 page site in 8 minutes using a budget 4 core VM.
+* **Svelte Everywhere:** Use Svelte for your SSR templates and with partial hydration on the client for tiny html/bundle sizes.
+* **Straightforward Data Flow:** By simply associating a `data.js` file with your route, you have complete control over how you fetch, prepare, and manipulate data before sending it to your Svelte template.  Anything you can do in Node.js, you can do to fetch your data. Multiple data sources, no problem.
+* **Community Plugins:** Easily extend what your Elder.js site can do by adding [prebuilt plugins](https://github.com/Elderjs/plugins) to your site.
+
+
+**Context** 
+
+Elder Guide co-Founder [Nick Reese](https://nicholasreese.com) has built or managed 5 major SEO properties over the past 14 years. After leading the transition of several complex sites to static site generators he loved the benefits of the JAM stack, but wished there was a better solution for complex, data intensive, projects. Elder.js is his vision for how static site generators can become viable for sites of all sizes regardless of the number of pages or how complex the data being presented is.
+
+We hope you find this project useful whether you're building a small personal blog or a flagship SEO site that impacts millions of users. 
 
 
 ## Getting Started:
@@ -100,7 +106,7 @@ Here is what a route for a website's homepage might look like it's simplest form
 // ./src/routes/home/route.js
 module.exports = {
   all: async () => [{ slug: '/' }], // an array of request objects.
-  permalink: async ({ request, settings }) => request.slug, // a function that turns request objects into relative urls. 
+  permalink: ({ request, settings }) => request.slug, // a sync function that turns request objects into relative urls. 
 };
 ```
 
@@ -110,6 +116,8 @@ Two things are happening here:
 * `permalink()`: The permalink function transforms request objects into permalinks. In this example, the "permalink" for `{slug: '/'}` is `/`. This makes sense because "/" is the relative url of the homepage of a site.
 
 Together the `all` and `permalink` functions are used to complete map of all of the urls a specific route should handle.
+
+**NOTE:** A route's `permalink` function must by synchronous.
 
 
 ### How Routing Differs from Express-like Frameworks
@@ -168,8 +176,79 @@ Here is the function signature for a `route.js` permalink function:
 }
 ```
 
+### Route.js Best Practices:
 
+With the simple example out of the way, let's talk about best practices and let's look at a more complex example of a `route.js` file.
 
+**Best Practice:** A route's `all` function should return the minimum viable data points needed generate a page.
+
+> Skinny `request` objects. Fat `data.js` files.
+
+When people first encounter Elder.js there is a strong temptation to load the `request` objects returned by a route's `all` function with tons of data.
+
+While this approach works it doesn't scale very well. Fetching, preparing, and processing data should be done in your `data.js` file.
+
+That said, it is recommend that you only include the bare minimum required by your database, api, or data store and then organize the rest of the data fetching, preparing, and organization in the route's `data.js`file.
+
+**Real World Example**
+
+To drive this point home and to show a more complex example of routing, imagine you're building a travel that lists tourist attractions for major cities throughout the world. 
+
+You have a `city` route and for each page on that route you need 3 data points to query your API, database, or datastore in order to pull in all of the rest of the page's data. 
+
+These data points are:
+
+1. The language of the page being generated.
+1. The City slug
+1. The Country slug
+
+Here is what your route.js would look like to support `/en/spain/barcelona/` and `/es/espana/barcelona/`.
+
+```javascript
+// ./src/routes/city/route.js
+module.exports = {
+  all: async ({ query }) => {
+  // await query.db(`your implementation here`) or await query.api(`get data`);
+   return [
+      { slug: 'barcelona', country: { slug: 'spain' }, lang: 'en' }, 
+      { slug: 'barcelona', country: { slug: 'espana' }, lang: 'es'}
+    ]
+  },
+  permalink: ({ request, settings }) => `/${request.lang}/${request.country.slug}/${request.slug}/`, 
+};
+```
+
+From here each route's `data.js` file will have access to the `request` object returned by the `all` function.
+
+**Problems with Fat Request Objects**
+
+Imagine for a moment that we attempted to include all of the additional details needed to generate the page on our request object like this:
+
+```javascript
+[
+  { slug: 'barcelona', country: { slug: 'spain' }, lang: 'en', data: { hotels: 12, attractions: 14, promotions: ['English promotion'], ...lotsOfData } }, 
+  { slug: 'barcelona', country: { slug: 'espana' }, lang: 'es' data: { hotels: 12, attractions: 14, promotions: ['Spanish promotion'], ...lotsOfData } }
+]
+```
+
+Now imagine in your request object gets to your `data.js` file (covered elsewhere), you're adding in additional data and returning a data object that looks like:
+
+```javascript
+module.exports = async ({ query, request, data }) => {
+  // do magic to look up data from your data store.
+  // await query.db or query.api 
+
+  return { hotels: [{...hotel}, {...hotel}, {...hotel}, {...hotel}, {...hotel}]}
+};
+```
+
+Now you've got access to both the `request` and `data` objects in Svelte templates and you're asking yourself:
+
+> Should I be accessing `request.data.hotels` or just `data.hotels.length`
+
+Save yourself this headache by remembering: **skinny `request` objects, fat `data.js` files**.
+
+**Note:** If you're interested in **i18n** [please look at this issue](https://github.com/Elderjs/elderjs/issues/6) as robust support could be offered by a community plugin.
 
 ## Data.js Files
 
@@ -178,6 +257,24 @@ Whether you’re building are a personal blog or complex data driven SEO site, y
 Each route can include an optional `data.js` file which return a single object. This `data` object will be passed into the route's Svelte template.
 
 Data.js files receive the following parameters: `data`, `query`, `helpers`, `settings`, `errors`, `perf`, `allRequests`.
+
+Here is what a common `data.js` file may look like:
+
+```javascript
+module.exports = async ({ query, settings, request, data }) => {
+  // do magic to get data from your data store.
+  // const externalData = await query.db(`SELECT * FROM city WHERE slug = $1, [request.slug])
+  // or
+  // const externalData = await query.api.get(`https://yourdata.com/api/city/${requre.slug}`)...
+  return {
+    ...data,
+    ...externalData
+  }
+};
+```
+In short we're taking the `request` object returned from a route's `all` function and hitting an external data store.
+
+It's important to note that we're also merging this external data with the data passed into the `data.js` file so we are picking up any data set by hooks or plugins.
 
 For a basic understanding of what can be done in a `data.js` file we encourage you to look at [data file for the Home template in the `elderjs-template` project](https://github.com/Elderjs/template/blob/master/src/routes/home/data.js).
 
@@ -302,7 +399,6 @@ Let's say your team was using Elder Guide for SSR and wanted to add an arbitrary
 * While it may be tempting to offer this functionality to plugins it is not available because plugins should be side effect free.
 * If you are looking to store data or custom data points for your plugin, look at the `init()` function on the plugin definition as you can use that closure to store data that is plugin specific between hook invocations.
 * At this point there is no way to add additional hooks to the system. In the future we may add the ability for plugins to define their own hooks which would shadow system hooks. If you think a hook is needed that you don't see, open a PR and please detail it's use case.
-
 
 
 ## Specifications and Config
