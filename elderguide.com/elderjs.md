@@ -27,7 +27,7 @@ We hope you find this project useful whether you're building a small personal bl
 
 ## Getting Started:
 
-The quickest way to get started is to get started with the Elder.js template using [degit](https://github.com/Rich-Harris/degit):
+The quickest way to get started is to get started with the [Elder.js template](https://github.com/Elderjs/template) using [degit](https://github.com/Rich-Harris/degit):
 
 Here is a demo of the template: [https://elderjs.netlify.app/](https://elderjs.netlify.app/)
 
