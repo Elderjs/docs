@@ -255,7 +255,7 @@ Save yourself this headache by remembering: **skinny `request` objects, fat `dat
 
 ## Data.js Files
 
-Whether you’re building are a personal blog or complex data driven SEO site, your `/routes/[route]/data.js` file is the recommend place to fetch (from a db, api, or other source) and prepare data to be consumed by your Svelte templates.
+Whether you’re building a personal blog or complex data driven SEO site, your `/routes/[route]/data.js` file is the recommend place to fetch (from a db, api, or other source) and prepare data to be consumed by your Svelte templates.
 
 Each route can include an optional `data.js` file which return a single object. This `data` object will be passed into the route's Svelte template.
 
