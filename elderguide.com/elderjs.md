@@ -120,7 +120,7 @@ Two things are happening here:
 
 Together the `all` and `permalink` functions are used to complete map of all of the urls a specific route should handle.
 
-**NOTE:** A route's `permalink` function must by synchronous.
+**NOTE:** A route's `permalink` function must be synchronous.
 
 
 ### How Routing Differs from Express-like Frameworks
@@ -195,13 +195,13 @@ That said, it is recommend that you only include the bare minimum required by yo
 
 **Real World Example**
 
-To drive this point home and to show a more complex example of routing, imagine you're building a travel that lists tourist attractions for major cities throughout the world. 
+To drive this point home and to show a more complex example of routing, imagine you're building a travel site that lists tourist attractions for major cities throughout the world. 
 
 You have a `city` route and for each page on that route you need 3 data points to query your API, database, or datastore in order to pull in all of the rest of the page's data. 
 
 These data points are:
 
-1. The language of the page being generated.
+1. The language of the page being generated
 1. The City slug
 1. The Country slug
 
@@ -333,7 +333,7 @@ This allows users to modify the `allRequests` array. If you modify or add to thi
 
 ### 4. Full 'request' Objects are Built
 
-Once Elder.js has a full list of requests, it then build permalinks and full 'request' objects that will be consumed by hooks, `data.js` files, Svelte templates, and Svelte layouts.
+Once Elder.js has a full list of requests, it then builds permalinks and full 'request' objects that will be consumed by hooks, `data.js` files, Svelte templates, and Svelte layouts.
 
 The full request object will look something like so (truncated for clarity):
 
@@ -350,7 +350,7 @@ request = {
 
 ```
 
-It is important to note that all of the params of the 'request' objects returned by the `all` function will be present the 'request' object even though our example only uses `slug`.
+It is important to note that all of the params of the 'request' objects returned by the `all` function will be present in the 'request' object even though our example only uses `slug`.
 
 ### 5. Hooks are Executed Until the `data.js` is Run
 
@@ -612,9 +612,9 @@ module.exports = {{output_route_schema}}
 ### Requirements for `name` and `description` fields
 In various places such as on hooks, plugins, and stacks, you'll see that Elder.js requires `name` and `description` fields.
 
-While this requirement may seem like an added development burden initially, it makes it extremely easy for you to public share your hooks or bundle them into plugins in a way others can use. (Plus your future self will thank you when you need to modify your code a year from now.)
+While this requirement may seem like an added development burden initially, it makes it extremely easy for you to publicly share your hooks or bundle them into plugins in a way others can use. (Plus your future self will thank you when you need to modify your code a year from now.)
 
-These fields are also used to generate the pretty pretty printouts of how long each hook is adding to your page generation time that you see when you enable `debug.performance = true` in your `elder.config.js`.
+These fields are also used to generate the pretty printouts of how long each hook is adding to your page generation time that you see when you enable `debug.performance = true` in your `elder.config.js`.
 
 <img src="https://elderguide.com/images/performance-debug-true.png" alt="Elder.js Performance Debug True" style="max-width:100%; margin: 1rem 0;" />
 
@@ -692,7 +692,7 @@ const plugin: PluginOptions = {
     // be persisted for the entire lifecycle of elder.js
     // this means the closure persists between server.js loads AND between pages during build.
     // Temporary data can be stored on this object,
-    // but it is up to the plugin to clean up after itself and manage it's own state.
+    // but it is up to the plugin to clean up after itself and manage its own state.
     return plugin;
   },
   hooks: [
@@ -765,7 +765,7 @@ The technical reason for this is that **Svelte templates** are the backbone of h
 
 ### Svelte Templates and Partial Hydration
 
-Elder.js uses SSR Svelte components for it's templating. All of the magic you usually get with SSR Svelte templates is handled here. This includes `<svelte:head>`, `<style></style>`, `<script></script>` and more.
+Elder.js uses SSR Svelte components for its templating. All of the magic you usually get with SSR Svelte templates is handled here. This includes `<svelte:head>`, `<style></style>`, `<script></script>` and more.
 
 Each route folder is expected to have a Svelte component in it's folder that it will use as it's template. (`./src/routes/RouteName/RouteName.svelte` -- Notice the capitalization). Within these templates you can use the syntax below syntax on components and provided you are using the Elder.js rollup file and the `partialHydration` preprocessor. (You're probably best just copying it from the [`elderjs-template`](https://github.com/Elderjs/plugin-template))
 
@@ -779,7 +779,7 @@ What this will do is setup a new Svelte root component in the produced HTML and 
 There are two differences between partial hydration and the way most frameworks handle hydration:
 
 1. With partial hydration you're only sending the data needed to make the respective components interactive instead of data for the whole page.
-1. With partial hydration you end up with multiple root components instead of one main component root. (Don't worry, you can still use Svelte stores allow them to easily share state across them.)
+1. With partial hydration you end up with multiple root components instead of one main component root. (Don't worry, you can still use Svelte stores to allow them to easily share state across them.)
 
 The end result is generally smaller bundle/page sizes and less work for the main thread. is that we're only hydrating what is needed by the client instead of all of the data to build the page.
 
@@ -824,8 +824,8 @@ When we set out to build elderguide.com we tested 6 different static site genera
 
 On our journey we had 3 major realizations:
 
-1. Most SSGs are built for either simple sites/blogs or for full scale "app frameworks" that have added an 'export' process added as an after thought.
-1. A fetching data from multiple sources (dbs, apis, config files, markdown files) lead to major code spaghetti.
+1. Most SSGs are built for either simple sites/blogs or for full scale "app frameworks" that have added an 'export' process added as an afterthought.
+1. Fetching data from multiple sources (dbs, apis, config files, markdown files) can lead to major code spaghetti.
 1. Client side routing adds a huge amount of complexity (and bundle size) to initial loads for very little SEO benefit. If you aren’t building an App, why would we want to fully hydrate our JS framework just for faster routing? Browsers a great at routing… we should only be hydrating things that need to be hydrated.
 
 Further, all of the mature JS alternatives (Gatsby, Next.js, Nuxt.js) are all tightly coupled with React/Vue. This was a bummer as we loved the amazing developer experience Svelte offers. 
@@ -879,7 +879,7 @@ You can see how this functionality is utilized in the [`elderjs-template`](https
 ### `build`
 The `build` function exported from Elder.js uses Node's cluster module to use multiple processes to build your site.
 
-In short, here is how `build` work at a high level:
+In short, here is how `build` works at a high level:
 
 The main process runs through bootstrap and collects `allRequests`. It then spins up workers and divides the requests evenly across these workers. It then waits for the workers to complete, runs any hooks for after build and completes.
 
@@ -902,10 +902,10 @@ This is the rollup preprocessor that Elder.js expects to be used when rollup is 
 ### Why can't I use Svelte templates for data fetching/manipulation?
 
 
-If you’re familiar with Sapper you may be accustom to storing you data fetching and manipulation logic in your Svelte files.
+If you’re familiar with Sapper you may be accustomed to storing your data fetching and manipulation logic in your Svelte files.
 
 
-Initially when designing Elder.js we experimented with this approach but found that a separate data.js file which returned a single data object ready to be consumed by you svelte template was a cleaner separation of concerns.
+Initially when designing Elder.js we experimented with this approach but found that a separate data.js file which returned a single data object ready to be consumed by your svelte template was a cleaner separation of concerns.
 
 
 Data files for fetching, manipulating, and returning data. Svelte for handling data presentation, interactivity, and reactivity.
@@ -939,7 +939,7 @@ Elder.js solves these roadblocks.
 
 ### Adding Database Access
 
-If your project is going to be querying it’s data from a database we recommend using the bootstrap hook and adding a connection to your database on the “query” property. [See this hook example above](https://elderguide.com/tech/elderjs/#hook-example-1-bootstrap).
+If your project is going to be querying its data from a database we recommend using the bootstrap hook and adding a connection to your database on the “query” property. [See this hook example above](https://elderguide.com/tech/elderjs/#hook-example-1-bootstrap).
 
 
 
