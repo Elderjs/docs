@@ -783,6 +783,16 @@ There are two differences between partial hydration and the way most frameworks 
 
 The end result is generally smaller bundle/page sizes and less work for the main thread. is that we're only hydrating what is needed by the client instead of all of the data to build the page.
 
+**Note:** All props needed by the Svelte component must be included in `hydrate-client={{}}` and should be `JSON.stringify()` friendly.
+
+```javascript
+// Doesn't work
+<Component {ssrProp} hydrate-client={{ clientProp }} />
+
+// Works
+<Component hydrate-client={{ ssrProp, clientProp }} />
+```
+
 ### How partial hydration works under the covers.
 
 On the homepage of elderguide.com we use the following code to hydrate the autocomplete component:
