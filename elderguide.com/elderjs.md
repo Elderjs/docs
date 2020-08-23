@@ -870,11 +870,11 @@ Instead of burying this magic, things that happen automagically are logged to th
 ## Elder.js Exports:
 
 ### `server`
-Elder.js was built as a static site generator we offer a built in server that is pretty fast past the intial load.
+Elder.js was built as a static site generator, but it offers a built-in server that is pretty snappy past the initial bootstrap phase.
 
-We recommend you use this server as a previewer with `express` or `polka`.
+This can be used to power server rendered (SSR) apps or used to preview the output of your static site without having to build.
 
-You can see how this is done in the `elderjs-template` in the server.ts.
+You can see how this functionality is utilized in the [`elderjs-template`](https://github.com/Elderjs/template/blob/master/src/server.js).
 
 ### `build`
 The `build` function exported from Elder.js uses Node's cluster module to use multiple processes to build your site.
