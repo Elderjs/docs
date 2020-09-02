@@ -856,6 +856,10 @@ This is the rollup preprocessor that Elder.js expects to be used when rollup is 
 
 ## FAQ
 
+### How can I copy files to public?
+
+The [template project has a hook](https://github.com/Elderjs/template/blob/master/src/hooks.js) that copies your `./src/assets/` folder to the 'assets' location defined in your `elder.config.js`.
+
 ### Why can't I use Svelte templates for data fetching/manipulation?
 
 If you’re familiar with Sapper you may be accustomed to storing your data fetching and manipulation logic in your Svelte files.
