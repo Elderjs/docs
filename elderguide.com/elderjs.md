@@ -637,6 +637,7 @@ To use a plugin, it must be registered in your `elder.config.js` and can be load
 
 - [Critical Path CSS](https://github.com/Elderjs/plugins/tree/master/packages/critical-path-css) Quickly and easily generate and include critical path css for your Elder.js website.
 - [Sitemap](https://github.com/Elderjs/plugins/tree/master/packages/sitemap) Automatically generate the latest sitemap for your Elder.js website on build.
+- [Browser Reload](https://github.com/Elderjs/plugins/tree/master/packages/browser-reload) Automatically reload your browser when your server restarts.
 - Want to randomly preview a page from any route. (coming soon) (We've found this incredibly valuable when building sites with 15k+ pages of a specific route.)
 
 ### Other Plugin Ideas:
