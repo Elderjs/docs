@@ -608,12 +608,12 @@ In a few places you may see that Elder.js is using 'stacks.' These are just our 
 
 Here are the type defs:
 
-```javascript
+```typescript
 export type StackItem = {
-  source: string,
-  string: string,
-  priority: number,
-  name: string,
+  source: string;
+  string: string;
+  priority: number;
+  name: string;
 };
 
 export type Stack = Array<StackItem>;
