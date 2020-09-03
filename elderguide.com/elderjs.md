@@ -106,7 +106,7 @@ module.exports = {
   data: async ({ query, request, data }) => {
   // do magic to get data from your data store.
   const externalData = await query.db(`SELECT * FROM city WHERE slug = $1`, [request.slug])
-  // const externalData = await query.fetch(`https://yourdata.com/api/city/${requre.slug}`)
+  // const externalData = await query.fetch(`https://yourdata.com/api/city/${request.slug}`)
   return {
     ...data,
     // ...externalData
@@ -169,7 +169,7 @@ module.exports = async ({ query, settings, request, data }) => {
   // do magic to get data from your data store.
   const externalData = await query.db(`SELECT * FROM city WHERE slug = $1`, [request.slug]);
   // or
-  // const externalData = await query.api.get(`https://yourdata.com/api/city/${requre.slug}`)...
+  // const externalData = await query.api.get(`https://yourdata.com/api/city/${request.slug}`)...
   return {
     ...data,
     ...externalData,
@@ -362,7 +362,7 @@ module.exports = async ({ query, settings, request, data }) => {
   // do magic to get data from your data store.
   // const yourData = await query.db(`SELECT * FROM city WHERE slug = $1`, [request.slug])
   // or
-  // const yourData = await query.api.get(`https://yourdata.com/api/city/${requre.slug}`)...
+  // const yourData = await query.api.get(`https://yourdata.com/api/city/${request.slug}`)...
   return {
     ...data,
     ...yourData,
