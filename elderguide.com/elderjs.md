@@ -31,15 +31,10 @@ The quickest way to get started is to get started with the [Elder.js template](h
 ```bash
 npx degit Elderjs/template elderjs-app
 cd elderjs-app
+yarn # or npm install
 ```
 
-**Step 2: Install Dependencies**
-
-```bash
-npm install # or just yarn
-```
-
-**Step 3: Start the Project**
+**Step 2: Start the Project**
 
 ```bash
 npm start
