@@ -26,8 +26,6 @@ We hope you find this project useful whether you're building a small personal bl
 
 The quickest way to get started is to get started with the [Elder.js template](https://github.com/Elderjs/template) using [degit](https://github.com/Rich-Harris/degit):
 
-Here is a demo of the template: [https://elderjs.netlify.app/](https://elderjs.netlify.app/)
-
 **Step 1: Clone Template**
 
 ```bash
@@ -48,6 +46,8 @@ npm start
 ```
 
 Navigate to <a href="localhost:3000" rel="nofollow">http://localhost:3000</a>. You should see your app running.
+
+You can also see a live demo of this template: [https://elderjs.netlify.app/](https://elderjs.netlify.app/)
 
 ### Developing using the Template:
 
