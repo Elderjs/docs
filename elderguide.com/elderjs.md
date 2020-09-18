@@ -312,121 +312,6 @@ Save yourself this headache by remembering: **skinny `request` objects, fat `dat
 
 **Note:** If you're interested in **i18n** [please look at this issue](https://github.com/Elderjs/elderjs/issues/6) as robust support could be offered by a community plugin.
 
-## Data Flow
-
-Here is a detailed overview of how data flows through an Elder.js application from 'bootstrap' all the way to a generated HTML page.
-
-### 1. Everything starts in a site's route.js files
-
-Below is the example `route.js` file we'll be following the flow of.
-
-```javascript
-// `/routes/blog/route.js` <-- NOTE: 'blog' is the route name.
-module.exports = {
-  all: async ({ query, settings data, helpers }) => {
-    // await query.db(`your implementation here`) or await query.api(`get data`);
-    // something that returns an array of the minimum required data for the route.
-    return [{slug: 'why-kitten-rock'}];
-  },
-  permalink: ({ request, settings }) => {
-    return `/blog/${request.slug}/`;
-  }
-
-  // template: 'Blog.svelte' is assumed if not defined. (note: capitalized first letter.)
-  // layout: 'Layout.svelte' is assumed if not defined.
-}
-```
-
-### 2. Elder.js Bootstrap Itself
-
-During this process Elder.js validates all of the routes, plugins, hooks. It then runs the 'bootstrap' hook.
-
-Finally the `all` function each route is executed.
-
-Together the aggregate result of each route's `all` function is referred to as `allRequests`.
-
-### 3. The `allRequests` Hook is Run
-
-This allows users to modify the `allRequests` array. If you modify or add to this array of objects make sure each result has a 'request.route' key.
-
-### 4. Full 'request' Objects are Built
-
-Once Elder.js has a full list of requests, it then builds permalinks and full 'request' objects that will be consumed by hooks, `data` functions, Svelte templates, and Svelte layouts.
-
-The full request object will look something like so (truncated for clarity):
-
-```javascript
-request = {
-  slug: `why-kittens-rock`,
-  // ... any other keys from the `request` object returned from the `all` function.
-
-  // below is then added by Elder.js
-  permalink: "/blog/why-kittens-rock",
-  route: "blog",
-  type: "build", // server or build.
-};
-```
-
-It is important to note that all of the params of the 'request' objects returned by the `all` function will be present in the 'request' object even though our example only uses `slug`.
-
-### 5. Hooks are Executed Until the `data` function is Run
-
-The data flows through all of the hooks until it reaches a route's `data` function.
-
-How you modify the data in your `data` function is up to you. Anything you can do in Node.js you can do here.
-
-It is important to know that the `data` parameter that is passed to this function may not be empty. If you simply `return yourData` then you may get unexpected outcomes from plugins or hooks.
-
-```javascript
-module.exports = async ({ query, settings, request, data }) => {
-  // do magic to get data from your data store.
-  // const yourData = await query.db(`SELECT * FROM city WHERE slug = $1`, [request.slug])
-  // or
-  // const yourData = await query.api.get(`https://yourdata.com/api/city/${request.slug}`)...
-  return {
-    ...data,
-    ...yourData,
-  };
-};
-```
-
-### 6. The 'data' hook is Executed
-
-The data hook is generally used by plugins to modify data for a route.
-
-If for some reason you have an empty data object, check that your plugins and hooks aren't returning just their data, instead of using a pattern like so:
-
-```javascript
-return {
-  data: {
-    ...data, // this is from the parameter of the hook function.
-    ...additionalData, // this data from the hook or plugin.
-  },
-};
-```
-
-### 7. The data Object is passed to the Svelte template
-
-In this example, `./src/routes/blog/Blog.svelte` may look like this:
-
-```javascript
-<script>
-  export let data; // here is the 'data' object we've been following. export let
-  settings; // Elder.js settings export let helpers; // Elder.js helpers and
-  user helpers. export let request; // 'request' object from above. ....
-</script>
-```
-
-### 8. The HTML returned by Blog.svelte is passed into Layout.svelte
-
-Svelte layouts receive the same props as the template file but also include a `routeHTML` prop which would be the html from `Blog.svelte` in this example.
-
-### 9. Page Generation Completes
-
-All further hooks are run until the 'request' has been completed.
-
-This includes user hooks, system hooks, and plugin hooks.
-
 ## Hooks: How to Customize Elder.js
 
 Elder.js hooks are designed to be modular, sharable, and easily bundled in to [Elder.js plugins](https://github.com/Elderjs/plugins) for common use cases... while still giving developers of all skill levels an easy way to customize core page generation logic to their own needs.
@@ -512,26 +397,16 @@ Hooks can be defined in 3 places in your project.
 
 Under the hood, all of the hooks Elder.js runs are defined in the [@elderjs/elderjs `./src/hooks.ts`](https://github.com/Elderjs/elderjs/blob/master/src/hooks.ts).
 
-{{todo: output_system_hooks}}
+They can be disabled by adding the hook name to the `hooks.disable` array in your `elder.config.js`.
 
-### Advanced: Customizing the Hook Interface
-
-For power users we've included two hooks that can be used to customize the Hook Interface to your needs: `customizeHooks` and `modifyCustomProps`.
-
-Let's say your team was using Elder Guide for SSR and wanted to add an arbitrary 'user' object that is available and mutable on all hooks.
-
-**Step 1**: Register a hook in your hooks.js file to run on the 'customizeHooks' hook. In your specified 'run()' function adjust the `hookInterface` to modify the 'props' and 'mutable' arrays on all hooks to include 'user'. (Loop through them all and push 'user' into each array.)
-
-**Step 2**: In the same run() function as in step 1, modify the `customProps` property to include the `user` object. (customProps.user)
-
-**Step 3**: If for some reason you need to modify the `customProps` you set initially based on a request, you can modify them on the 'modifyCustomProps' hook.
-
-**Notes**
-
-- **Naming here is important, do not overwrite / shadow any of the props in Elder.ts**
-- While it may be tempting to offer this functionality to plugins it is not available because plugins should be side effect free.
-- If you are looking to store data or custom data points for your plugin, look at the `init()` function on the plugin definition as you can use that closure to store data that is plugin specific between hook invocations.
-- At this point there is no way to add additional hooks to the system. In the future we may add the ability for plugins to define their own hooks which would shadow system hooks. If you think a hook is needed that you don't see, open a PR and please detail it's use case.
+```javascript
+  // elder.config.js
+  ...
+  hooks: {
+    disable: ['elderWriteHtmlFileToPublic'], // this is used to disable internal hooks. Adding this would disabled writing your files on build.
+  }
+  ...
+```
 
 ## Specifications and Config
 
@@ -557,7 +432,6 @@ You can configure or rename your src/build folders in your `elder.config.js`.
 Project Root
 | elder.config.js
 | package.json
-| tsconfig.json (typescript only)
 | rollup.config.js
 | ... (other common stuff, .gitignore, svelte.config.js... etc)
 | -- src
@@ -568,8 +442,6 @@ Project Root
 | -- helpers
 | -- | -- index.js
 | -- | -- ...
-| -- assets
-| -- | -- items to be copied to public at build.
 | -- layouts
 | -- | -- Layout.svelte
 | -- routes
@@ -582,11 +454,6 @@ Project Root
 | -- components
 | -- | -- [component] ('Contact' in this example)
 | -- | -- | -- Contact.svelte
-
-
-Typescript Projects:
-| -- build
-| -- | ... copy of your compiled ts from the src folder here.
 ```
 
 ### Hook Specification
@@ -658,16 +525,16 @@ To use a plugin, it must be registered in your `elder.config.js` and can be load
 
 ### Official Plugins:
 
+- [Images](https://github.com/Elderjs/plugins/tree/master/packages/images) Easily add and manage responsive images with your Elder.js website.
+- [Markdown](https://github.com/Elderjs/plugins/tree/master/packages/markdown) An extensible markdown parser for [Elder.js](https://github.com/Elderjs/elderjs/) powered by [remark](https://github.com/remarkjs/remark).
 - [Critical Path CSS](https://github.com/Elderjs/plugins/tree/master/packages/critical-path-css) Quickly and easily generate and include critical path css for your Elder.js website.
 - [Sitemap](https://github.com/Elderjs/plugins/tree/master/packages/sitemap) Automatically generate the latest sitemap for your Elder.js website on build.
-- [Browser Reload](https://github.com/Elderjs/plugins/tree/master/packages/browser-reload) Automatically reload your browser when your server restarts.
-- Want to randomly preview a page from any route. (coming soon) (We've found this incredibly valuable when building sites with 15k+ pages of a specific route.)
+- [Browser Reload](https://github.com/Elderjs/plugins/tree/master/packages/browser-reload) Reload the browser when your Elder.js server restarts.
+- [References](https://github.com/Elderjs/plugins/tree/master/packages/images) Easily add wikipedia style references to your content.
 
 ### Other Plugin Ideas:
 
-- Want to use Elder.js to read your markdown files? Perfect use case for a plugin. ([example implementation](https://github.com/Elderjs/template/blob/master/src/plugins/elderjs-plugin-markdown/index.js))
 - Want to upload your statically generated files to S3? Perfect use case for a plugin. (See plugin example below)
-- Read all images in the project, compress them, cache them locally, and make them available to templates.
 - RSS feed plugin
 
 ### Writing Your Own Plugin
@@ -789,7 +656,7 @@ There are two differences between partial hydration and the way most frameworks 
 
 The end result is generally smaller bundle/page sizes and less work for the main thread. is that we're only hydrating what is needed by the client instead of all of the data to build the page.
 
-**Note:** All props needed by the Svelte component must be included in `hydrate-client={{}}` and should be `JSON.stringify()` friendly.
+**Note:** All props needed by the Svelte component must be included in `hydrate-client={{}}` and should be `JSON.stringify()` friendly. This means no functions, cyclical references, etc.
 
 ```javascript
 // Doesn't work
@@ -798,6 +665,17 @@ The end result is generally smaller bundle/page sizes and less work for the main
 // Works
 <Component hydrate-client={{ ssrProp, clientProp }} />
 ```
+
+### Hydration Options:
+
+To give you fine grained control over how a Svelte component behaves when it is mounted the following `hydrate-options` can be defined:
+
+- `hydrate-options={{ loading: 'lazy' }}` This is the default config, uses intersection observer to 'lazily' mount the Svelte component.
+- `hydrate-options={{ loading: 'eager' }}` This would cause the component to be hydrate in a blocking manner as soon as the js is rendered.
+- `hydrate-options={{ loading: 'none' }}` This allows you to add the HTML from a Svelte component, but not to hydrate it on the client. (only really useful with `helpers.inlineSvelteComponent` and possibly advanced shortcode usages.)
+- `hydrate-options={{ preload: true }}` This adds a preload to the head stack as outlined above... could be preloaded without forcing blocking.
+- `hydrate-options={{ preload: true, loading: 'eager' }}` This would preload and be blocking.
+- `hydrate-options={{ rootMargin: '500px', threshold: 0 }}` This would adjust the root margin of the intersection observer. Only usable with loading: 'lazy'
 
 ### How partial hydration works under the covers.
 
@@ -821,6 +699,303 @@ Later when we go to render these templates, we look for the removed components, 
 If you are curious the files to look at are: `partialHydration.ts` and `svelteComponent.ts.`
 
 The important thing to note is that still use Svelte variables in `hydrate-client` as long as they can be processed by `JSON.stringify`.
+
+> Security Note: Whatever you pass to `hydrate-client` will get written to the HTML shipped to the browser via [`devalue`](https://github.com/Rich-Harris/devalue). There are XSS and security considerations of passing data to the client.
+
+## Shortcodes: Customizing and Future Proofing Your Content
+
+**Available in Elder.js V1: Coming Soon**
+
+Whether your content lives in markdown files, on Prismic, Contentful, WordPress, Strapi, your own CMS, at some point you or someone who is managing the content will want to add some 'functionality' to this otherwise static content.
+
+These functionalities come in a few flavors:
+
+- Embedding an arbitrary Svelte component directly within the content.
+- Adding custom HTML to style/wrap content or achieve design goals.
+- Updating this otherwise static content automatically when a dynamic `datapoint` changes.
+- Creating a placeholder so that data can be fetched from an external service such as twitter/instagram and still be available via SSR. (Example: Server rendering your latest tweets.)
+
+Adding this type of functionality is a nightmare and is a huge source of **content debt** and **tech debt** for SEO sites.
+
+To make these situations more approachable, Elder.js offers shortcodes.
+
+### Overview
+
+If you aren't familiar with shortcodes, they are just strings that can wrap content or have their own attributes:
+
+- Self Closing: `{{shortcode attribute="" /}}`
+- Wrapping: `{{shortcode attribute=""}}wraps{{/shortcode}}`
+
+**NOTE:** The `{{` and `}}` brackets vary from system to system and can be configured in your `elder.config.js`.
+
+In Elder.js shortcodes are added in your `./src/shortcode.js` or via plugins.
+
+### Use Cases For Shortcodes:
+
+**Adding a Component Directly in Static Content**
+Imagine you want to empower the content team to embed a Svelte `widget` component anywhere within their content.
+
+Out of the box Elder.js adds a shortcode for this.
+
+Simply tell them to add `{{svelteComponent name="widget" props="{blue: true}" /}}` to their markup and Elder.js will hydrate and mount that component.
+
+**Adding custom HTML to style/wrap content or achieve design goals.**
+
+Imagine you're at work and the design team asks you to wrap small pieces of content with a wrapper of `<div class="bg-gray mb-1 p-2">` to 100 pieces of content... but having seen this situation before you realize that within 3 weeks it will probably need to be: `<div class="bg-gray mb-2 p-3 somethingelse">`.
+
+So to future proof this code change you introduce a `box` shortcode and you wrap your content in it like so:
+
+```plaintext
+{{box type="gray"}}
+  Your content here
+{{/box}}
+```
+
+Then in your `shortcodes.js` you add the following:
+
+```javascript
+module.exports = [
+  // ./src/shortcodes.js
+  {
+    shortcode: "box",
+    run: async ({ props, content }) => {
+      if (props.type === "gray") {
+        return `<div class="bg-gray mb-1 p-2">${content}</div>`;
+      }
+      // note that this shortcode returns a string.
+      return content;
+    },
+  },
+];
+```
+
+**Updating Datapoints in Static Content**
+
+The most common type of **content debt** is data sensitive content debt.
+
+This is where your otherwise static content needs to have some arbitrary data point updated within it.
+
+This is a common use case for us here at ElderGuide.com.
+
+On our content we often need to write things like: `The US has [numberOfNursingHomes] nursing homes nationwide.`
+
+Using shortcodes to make sure `[numberOfNursingHomes]`is always up-to-date future proofs us from having this **content debt**.
+
+To steal the example from the [Elder.js Template](https://github.com/Elderjs/template/), imagine you need to always show the latest `[numberOfPages]` on your site but you don't want to update `[numberOfPages]` each time you publish a new blog post.
+
+Here is how you'd create a shortcode using Elder.js internals to do just that:
+
+```javascript
+module.exports = [
+  // ./src/shortcodes.js
+    {
+    shortcode: 'numberOfPages',
+    run: async ({ allRequests }) => {
+      // allRequests represents 'request' objects for all of the pages of our site, if we know the length of that we know the length of our site.
+      return allRequests.length,
+    },
+  },
+]
+```
+
+Now, you can update your site to use `{{numberOfPages /}}` and any time the page count changes, so will the placeholder.
+
+**Advanced: A Placeholder For External Data/Content**
+
+One of the most powerful usecases for shortcodes is to use them as a placeholder external data fetching.
+
+Imagine you want the ability to display your latest tweet in a specific spot across multiple pages.
+
+You setup the `{{latestTweet /}}` shortcode and instead of just returning the latest tweet, we also want to add some css and js to the page as well.
+
+Here is the full power of how you'd implement this:
+
+```javascript
+// import 'node-fetch', 'axios'
+// ./src/shortcodes.js
+module.exports = [
+  {
+    shortcode: "latestTweet",
+    run: async () => {
+      // const latestTweet = await fetch(fromTwitterApi);
+      // fetching the data is up to you...
+
+      // while shortcodes often return strings, they can also return objects like so:
+      return {
+        // this is what the shortcode is replaced with. You CAN return an empty string.
+        html: `<div class="latest-tweet">${latestTweet}</div>`,
+
+        // You can add css here and it will get written to the head.
+        css:
+          ".box{border:1px solid red; padding: 1rem; margin: 1rem 0;} .box.yellow {background: lightyellow;}",
+
+        // Javascript that is added to the footer via the customJsStack.
+        js: "<script>var test = true;</script>",
+
+        // Arbitrary HTML that is added to the head via the headStack
+        head: '<meta test="true"/>',
+      };
+    },
+  },
+];
+```
+
+### Shortcode Spec:
+
+Shortcodes are defined by users by adding them to the array in their `./src/shortcodes.js`.
+
+In the spec below there is a simple example that returns a string and a full example that returns an object.
+
+```javascript
+// ./src/shortcodes.js
+
+module.exports = [
+  {
+    shortcode: "simple", // the shortcode name: results in {{simple /}}
+    run: async ({
+      props, // the attributes of the shortcode
+      content, // the content wrapped by the shortcode.
+    }) => {
+      return '<div class="simple">simple</div>';
+    },
+  },
+  {
+    shortcode: "returnsObject", // this is the shortcode name.
+    run: async ({
+      props, // the attributes defined on the shortcode.
+      content, // the content wrapped by the shortcode.
+      request, // the 'request' object for the page requested.
+      query, // the 'query' object
+      helpers, // the 'helpers' object with any user helpers and Elder.js helpers
+      settings, // settings
+      allRequests, // all of the 'request' objects Elder.js has.
+    }) => {
+      // while shortcodes often return strings, they can also return objects like so:
+      return {
+        html: "", // this is what the shortcode is replaced with. You CAN return an empty string.
+        css: "", // You can add css here and it will get written to the head.
+        js: "", // Javascript that is added to the footer via the customJsStack.
+        head: "", // Arbitrary HTML that is added to the head via the headStack
+      };
+    },
+  },
+];
+```
+
+## Data Flow
+
+Here is a detailed overview of how data flows through an Elder.js application from 'bootstrap' all the way to a generated HTML page.
+
+### 1. Everything starts in a site's route.js files
+
+Below is the example `route.js` file we'll be following the flow of.
+
+```javascript
+// `/routes/blog/route.js` <-- NOTE: 'blog' is the route name.
+module.exports = {
+  all: async ({ query, settings data, helpers }) => {
+    // await query.db(`your implementation here`) or await query.api(`get data`);
+    // something that returns an array of the minimum required data for the route.
+    return [{slug: 'why-kitten-rock'}];
+  },
+  permalink: ({ request, settings }) => {
+    return `/blog/${request.slug}/`;
+  }
+
+  // template: 'Blog.svelte' is assumed if not defined. (note: capitalized first letter.)
+  // layout: 'Layout.svelte' is assumed if not defined.
+}
+```
+
+### 2. Elder.js Bootstrap Itself
+
+During this process Elder.js validates all of the routes, plugins, hooks. It then runs the 'bootstrap' hook.
+
+Finally the `all` function each route is executed.
+
+Together the aggregate result of each route's `all` function is referred to as `allRequests`.
+
+### 3. The `allRequests` Hook is Run
+
+This allows users to modify the `allRequests` array. If you modify or add to this array of objects make sure each result has a 'request.route' key.
+
+### 4. Full 'request' Objects are Built
+
+Once Elder.js has a full list of requests, it then builds permalinks and full 'request' objects that will be consumed by hooks, `data` functions, Svelte templates, and Svelte layouts.
+
+The full request object will look something like so (truncated for clarity):
+
+```javascript
+request = {
+  slug: `why-kittens-rock`,
+  // ... any other keys from the `request` object returned from the `all` function.
+
+  // below is then added by Elder.js
+  permalink: "/blog/why-kittens-rock",
+  route: "blog",
+  type: "build", // server or build.
+};
+```
+
+It is important to note that all of the params of the 'request' objects returned by the `all` function will be present in the 'request' object even though our example only uses `slug`.
+
+### 5. Hooks are Executed Until the `data` function is Run
+
+The data flows through all of the hooks until it reaches a route's `data` function.
+
+How you modify the data in your `data` function is up to you. Anything you can do in Node.js you can do here.
+
+It is important to know that the `data` parameter that is passed to this function may not be empty. If you simply `return yourData` then you may get unexpected outcomes from plugins or hooks.
+
+```javascript
+module.exports = async ({ query, settings, request, data }) => {
+  // do magic to get data from your data store.
+  // const yourData = await query.db(`SELECT * FROM city WHERE slug = $1`, [request.slug])
+  // or
+  // const yourData = await query.api.get(`https://yourdata.com/api/city/${request.slug}`)...
+  return {
+    ...data,
+    ...yourData,
+  };
+};
+```
+
+### 6. The 'data' hook is Executed
+
+The data hook is generally used by plugins to modify data for a route.
+
+If for some reason you have an empty data object, check that your plugins and hooks aren't returning just their data, instead of using a pattern like so:
+
+```javascript
+return {
+  data: {
+    ...data, // this is from the parameter of the hook function.
+    ...additionalData, // this data from the hook or plugin.
+  },
+};
+```
+
+### 7. The data Object is passed to the Svelte template
+
+In this example, `./src/routes/blog/Blog.svelte` may look like this:
+
+```javascript
+<script>
+  export let data; // here is the 'data' object we've been following. export let
+  settings; // Elder.js settings export let helpers; // Elder.js helpers and
+  user helpers. export let request; // 'request' object from above. ....
+</script>
+```
+
+### 8. The HTML returned by Blog.svelte is passed into Layout.svelte
+
+Svelte layouts receive the same props as the template file but also include a `routeHTML` prop which would be the html from `Blog.svelte` in this example.
+
+### 9. Page Generation Completes
+
+All further hooks are run until the 'request' has been completed.
+
+This includes user hooks, system hooks, and plugin hooks.
 
 ## Why We Built Elder.js
 
@@ -861,8 +1036,11 @@ Instead of burying this magic, things that happen automagically are logged to th
 
 ## Default Helpers
 
-- Permalink resolver: `helpers.permalink[routeName]()`. Simply pass in a request object and it'll resolve the permalink.
-- `link`in templates. TODO.
+By default Elder.js adds a few items to the `helpers` object that is available in hooks, Svelte templates/layouts, and `data` functions.
+
+- `permalink`: A permalink resolver: `helpers.permalink[routeName]({requestObject})`. Simply pass in a request object and it'll resolve the permalink. It is often used like so `helpers.permalink.blog({slug: 'kittens-rock'})`.
+- `shortcode`: A more comfortable way to use shortcodes within Svelte files. Common usage within a .svelte file may look like : `{ @html helpers.shortcode({name: 'box', props: {class: "yellow"}, content: "content string here" }) }`. If you are using the default Elder.js shortcode brackets, this would output `{{box class='yellow'}}content string here{{/box}}` which would be parsed like any other shortcode.
+- `inlineSvelteComponent`: This helper is mainly useful when needing to add a Svelte component to your html via, hooks, plugins, or custom shortcodes. All of the options available when hydrating a component are available with this helper, it simply outputs the required hydration html so that Elder.js picks it up and hydrates the client. `helpers.inlineSvelteComponent({name: 'Foo', props: { anything: true }, options: { preload: true, eager: true }})`
 
 ## Elder.js Exports:
 
@@ -884,9 +1062,15 @@ The main process runs through bootstrap and collects `allRequests`. It then spin
 
 There are two notable config options: `numberOfWorkers` and `shuffleRequests` which you can read about in the config section.
 
-### `partialHydration`
+### `getRollupConfig`
 
-This is the rollup preprocessor that Elder.js expects to be used when rollup is bundling your Svelte templates and components.
+A function that generates all of the Elder.js required `rollup` output.
+
+See the clonable template for the minimum viable rollup config.
+
+### `getElderConfig`
+
+A helper function that returns the user's `elder.config.js` with defaults added in where they aren't defined.
 
 ## FAQ
 
@@ -927,3 +1111,12 @@ Elder.js solves these roadblocks.
 ### Adding Database Access
 
 If your project is going to be querying its data from a database we recommend using the bootstrap hook and adding a connection to your database on the “query” property. [See this hook example above](https://elderguide.com/tech/elderjs/#hook-example-1-bootstrap).
+
+### Customizing the HTML 'shell'
+
+In certain cases you may want to customize the shell that Elder.js writes the `templateHtml` and `layoutHtml` to.
+
+Often a quick regex on the `html` hook is enough, but if you'd like completely control you can overwrite how Elder.js compiles the html by:
+
+1. Add `elderCompileHtml` to the `hooks.disable` array in your `elder.config.js`.
+1. Register a new function on the `compileHtml` hook and implement your desired functionality. (Look for `elderCompileHtml` in @elderjs/elderjs's `hooks.ts` file.)
