@@ -192,18 +192,6 @@ In short we're taking the `request` object returned from a route's `all` functio
 
 It's important to note that we're also merging this external data with the data passed into the `data` function so we are picking up any data set by hooks or plugins.
 
-### Database Connections, APIs, and External Data Sources
-
-The `data` function of each route is designed to be the central place to fetch data for a route but the implementation details are very open ended and up to you.
-
-Just about anything you can do in Node.js you can do in a `data` function.
-
-That said, one of the most common things a `data` function will need to do is to connect to a remote data store.
-
-The recommended way of setting up that connection is [to populate the `query` object on the `bootstrap` hook](https://elderguide.com/tech/elderjs/#hook-example-1-bootstrap).
-
-Using this pattern allows you to share a database connection across the entire lifecycle of your Elder.js site.
-
 ### How Routing Differs from Express-like Frameworks
 
 Together the `all` and `permalink` functions are used to complete map of all of the urls a specific route should handle.
@@ -312,6 +300,18 @@ Save yourself this headache by remembering: **skinny `request` objects, fat `dat
 
 **Note:** If you're interested in **i18n** [please look at this issue](https://github.com/Elderjs/elderjs/issues/6) as robust support could be offered by a community plugin.
 
+### Database Connections, APIs, and External Data Sources
+
+The `data` function of each route is designed to be the central place to fetch data for a route but the implementation details are very open ended and up to you.
+
+Just about anything you can do in Node.js you can do in a `data` function.
+
+That said, one of the most common things a `data` function will need to do is to connect to a remote data store.
+
+The recommended way of setting up that connection is [to populate the `query` object on the `bootstrap` hook](https://elderguide.com/tech/elderjs/#hook-example-1-bootstrap).
+
+Using this pattern allows you to share a database connection across the entire lifecycle of your Elder.js site.
+
 ## Hooks: How to Customize Elder.js
 
 Elder.js hooks are designed to be modular, sharable, and easily bundled in to [Elder.js plugins](https://github.com/Elderjs/plugins) for common use cases... while still giving developers of all skill levels an easy way to customize core page generation logic to their own needs.
@@ -338,7 +338,7 @@ It also keeps hooks/plugins that are shared publicly from doing unexpected thing
 
 <img src="https://elderguide.com/images/elderjs-hook-lifescyle-v3.png" alt="Elder.js hook Lifecycle" style="max-width:100%; margin:1rem 0;" />
 
-{{output_hook_list}}
+**_output_hook_list_**
 
 ### Hook Example 1: `bootstrap`
 
@@ -346,11 +346,7 @@ Here is the `bootstrap` hook from the `hookInterface.ts` file.
 
 ```javascript
 // From hookInterface.ts
-{
-  {
-    output_bootstrap_hook;
-  }
-}
+___output_bootstrap_hook___;
 ```
 
 This hook is executed after Elder.js has bootstrapped itself and lets users run arbitrary functions at that point too.
@@ -387,10 +383,9 @@ If you wanted to initialize a database connection and make it available on all h
 
 **USER HOOKS:**
 
-Hooks can be defined in 3 places in your project.
+Hooks can be defined in 2 places in your project.
 
-1. In your `./src/hooks.js` file. - _We recommend organizing site wide hooks in this file._
-1. In one of your `./routes/[routeName]/route.js` file. - _We recommend organizing route specific hooks here. (you'll still need to add logic to make sure it only runs on that route.)_
+1. In your `./src/hooks.js` file. - _We recommend organizing all hooks in this file._ You can limit a function to run on a specific route by looking at `request.route === 'routeName'`.
 1. Within a plugin.
 
 **SYSTEM HOOKS:**
@@ -419,7 +414,7 @@ By default Elder.js looks for an `elder.config.js` file in your project root and
 Below is what the default configuration file looks like. This is automatically generated if an `elder.config.js` file is missing.
 
 ```javascript
-module.exports = {{output_default_config}}
+module.exports = ___output_default_config___;
 ```
 
 ### Elder.js Expected file structure
@@ -461,7 +456,7 @@ Project Root
 Hooks are the core of how to make site level customizations. Below is the default spec for a hook.
 
 ```javascript
-module.exports = {{output_hook_schema}}
+module.exports = ___output_hook_schema___;
 ```
 
 ### Plugin Specification
@@ -469,7 +464,7 @@ module.exports = {{output_hook_schema}}
 Plugins are a bundle of hooks with their own closure scope and `init()` function. Below is the default specification for a hook.
 
 ```javascript
-module.exports = {{output_plugin_schema}}
+module.exports = ___output_plugin_schema___;
 ```
 
 ### Route Specification
@@ -477,7 +472,7 @@ module.exports = {{output_plugin_schema}}
 Routes can be defined by plugins or by including a `./src/[routeName]/route.js` file.
 
 ```javascript
-module.exports = {{output_route_schema}}
+module.exports = ___output_route_schema___;
 ```
 
 ### Requirements for `name` and `description` fields
@@ -733,6 +728,7 @@ In Elder.js shortcodes are added in your `./src/shortcode.js` or via plugins.
 ### Use Cases For Shortcodes:
 
 **Adding a Component Directly in Static Content**
+
 Imagine you want to empower the content team to embed a Svelte `widget` component anywhere within their content.
 
 Out of the box Elder.js adds a shortcode for this.
@@ -777,11 +773,13 @@ This is where your otherwise static content needs to have some arbitrary data po
 
 This is a common use case for us here at ElderGuide.com.
 
-On our content we often need to write things like: `The US has [numberOfNursingHomes] nursing homes nationwide.`
+On our content we often need to write things like: `The US has {{numberOfNursingHomes /}} nursing homes nationwide.`
 
-Using shortcodes to make sure `[numberOfNursingHomes]`is always up-to-date future proofs us from having this **content debt**.
+Using shortcodes to make sure `{{numberOfNursingHomes /}}`is always up-to-date future proofs us from having this **content debt**.
 
-To steal the example from the [Elder.js Template](https://github.com/Elderjs/template/), imagine you need to always show the latest `[numberOfPages]` on your site but you don't want to update `[numberOfPages]` each time you publish a new blog post.
+Since our data comes from a database and all implementations will differ a bit, we'll steal the example from the [Elder.js Template](https://github.com/Elderjs/template/) instead.
+
+Imagine you need to always show the latest `{{numberOfPages /}}` on your site but you don't want to update `{{numberOfPages /}}` each time you publish a new blog post.
 
 Here is how you'd create a shortcode using Elder.js internals to do just that:
 
@@ -1031,7 +1029,6 @@ Instead of burying this magic, things that happen automagically are logged to th
 
 - All exports from `./src/helpers/index.js` are imported and added to the `helpers` object which is available in the `data` functions and all hooks.
 - All hooks in your `./src/hooks.js` file, `./routes/[routeName]/route.js` files, and plugins are imported in validated.
-- When Elder.js detects a `./tsconfig.json` in your project root we check it for for a build folder. If it exists and you haven't defined it in your `elder.config.js` it will be set automatically.
 - All optional variables in your routes file will be set automatically if Elder.js detects that the files needed are present.
 
 ## Default Helpers
