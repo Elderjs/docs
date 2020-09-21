@@ -338,7 +338,7 @@ It also keeps hooks/plugins that are shared publicly from doing unexpected thing
 
 <img src="https://elderguide.com/images/elderjs-hook-lifescyle-v3.png" alt="Elder.js hook Lifecycle" style="max-width:100%; margin:1rem 0;" />
 
-**_output_hook_list_**
+{{output_hook_list}}
 
 ### Hook Example 1: `bootstrap`
 
@@ -414,7 +414,7 @@ By default Elder.js looks for an `elder.config.js` file in your project root and
 Below is what the default configuration file looks like. This is automatically generated if an `elder.config.js` file is missing.
 
 ```javascript
-module.exports = ___output_default_config___;
+module.exports = {{output_default_config}}
 ```
 
 ### Elder.js Expected file structure
@@ -456,7 +456,7 @@ Project Root
 Hooks are the core of how to make site level customizations. Below is the default spec for a hook.
 
 ```javascript
-module.exports = ___output_hook_schema___;
+module.exports = {{output_hook_schema}}
 ```
 
 ### Plugin Specification
@@ -464,7 +464,7 @@ module.exports = ___output_hook_schema___;
 Plugins are a bundle of hooks with their own closure scope and `init()` function. Below is the default specification for a hook.
 
 ```javascript
-module.exports = ___output_plugin_schema___;
+module.exports = {{output_plugin_schema}}
 ```
 
 ### Route Specification
@@ -472,7 +472,7 @@ module.exports = ___output_plugin_schema___;
 Routes can be defined by plugins or by including a `./src/[routeName]/route.js` file.
 
 ```javascript
-module.exports = ___output_route_schema___;
+module.exports = {{output_route_schema}}
 ```
 
 ### Requirements for `name` and `description` fields
