@@ -456,7 +456,9 @@ Project Root
 Hooks are the core of how to make site level customizations. Below is the default spec for a hook.
 
 ```javascript
+
 module.exports = {{output_hook_schema}}
+
 ```
 
 ### Plugin Specification
@@ -464,7 +466,9 @@ module.exports = {{output_hook_schema}}
 Plugins are a bundle of hooks with their own closure scope and `init()` function. Below is the default specification for a hook.
 
 ```javascript
+
 module.exports = {{output_plugin_schema}}
+
 ```
 
 ### Route Specification
@@ -472,7 +476,9 @@ module.exports = {{output_plugin_schema}}
 Routes can be defined by plugins or by including a `./src/[routeName]/route.js` file.
 
 ```javascript
+
 module.exports = {{output_route_schema}}
+
 ```
 
 ### Requirements for `name` and `description` fields
