@@ -481,6 +481,16 @@ module.exports = {{output_route_schema}}
 
 ```
 
+### Shortcode Specification
+
+Shortcodes are a great way to future proof your content. Below is the default shortcode specification. These should be defined in the array exported by your `./src/shortcodes.js`
+
+```javascript
+
+module.exports = [{{output_shortcode_schema}}]
+
+```
+
 ### Requirements for `name` and `description` fields
 
 In various places such as on hooks, plugins, and stacks, you'll see that Elder.js requires `name` and `description` fields.
