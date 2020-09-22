@@ -463,7 +463,7 @@ module.exports = {{output_hook_schema}}
 
 ### Plugin Specification
 
-Plugins are a bundle of hooks with their own closure scope and `init()` function. Below is the default specification for a hook.
+Plugins are a bundle of hooks with their own closure scope based on the object that is returned by the `init()` function. This means that all hooks and shortcodes receive the plugin definition returned by the `init()` function and are able to store properties in that scope throughout the hook lifecycle. Below is the default specification for a plugin.
 
 ```javascript
 
@@ -527,11 +527,11 @@ To use a plugin, it must be registered in your `elder.config.js` and can be load
 ### Official Plugins:
 
 - [Images](https://github.com/Elderjs/plugins/tree/master/packages/images) Easily add and manage responsive images with your Elder.js website.
-- [Markdown](https://github.com/Elderjs/plugins/tree/master/packages/markdown) An extensible markdown parser for [Elder.js](https://github.com/Elderjs/elderjs/) powered by [remark](https://github.com/remarkjs/remark).
+- [Markdown](https://github.com/Elderjs/plugins/tree/master/packages/markdown) An extensible markdown parser for [Elder.js](https://github.com/Elderjs/elderjs/) powered by [remark](https://github.com/remarkjs/remark). Take a folder of markdown and automatically populate your route's `data` object.
 - [Critical Path CSS](https://github.com/Elderjs/plugins/tree/master/packages/critical-path-css) Quickly and easily generate and include critical path css for your Elder.js website.
 - [Sitemap](https://github.com/Elderjs/plugins/tree/master/packages/sitemap) Automatically generate the latest sitemap for your Elder.js website on build.
 - [Browser Reload](https://github.com/Elderjs/plugins/tree/master/packages/browser-reload) Reload the browser when your Elder.js server restarts.
-- [References](https://github.com/Elderjs/plugins/tree/master/packages/images) Easily add wikipedia style references to your content.
+- [References](https://github.com/Elderjs/plugins/tree/master/packages/references) Easily add wikipedia style references to your content with `ref` and `referenceList` shortcodes.
 
 ### Other Plugin Ideas:
 
@@ -697,15 +697,13 @@ At a high level what is happening is that when the Svelte template components ar
 
 Later when we go to render these templates, we look for the removed components, generate the server rendered version and include the client component in the generated JS with the props that were given in `hydrate-client`.
 
+> Security Note: Whatever you pass to `hydrate-client` will get written to the HTML shipped to the browser via [`devalue`](https://github.com/Rich-Harris/devalue). There are XSS and security considerations of passing data to the client.
+
 If you are curious the files to look at are: `partialHydration.ts` and `svelteComponent.ts.`
 
 The important thing to note is that still use Svelte variables in `hydrate-client` as long as they can be processed by `JSON.stringify`.
 
-> Security Note: Whatever you pass to `hydrate-client` will get written to the HTML shipped to the browser via [`devalue`](https://github.com/Rich-Harris/devalue). There are XSS and security considerations of passing data to the client.
-
 ## Shortcodes: Customizing and Future Proofing Your Content
-
-**Available in Elder.js V1: Coming Soon**
 
 Whether your content lives in markdown files, on Prismic, Contentful, WordPress, Strapi, your own CMS, at some point you or someone who is managing the content will want to add some 'functionality' to this otherwise static content.
 
@@ -904,6 +902,9 @@ module.exports = {
   },
   permalink: ({ request, settings }) => {
     return `/blog/${request.slug}/`;
+  },
+  data: async ({request, query, settings, helpers, data }) =>{
+    // we'll look at this function below.
   }
 
   // template: 'Blog.svelte' is assumed if not defined. (note: capitalized first letter.)
@@ -943,13 +944,11 @@ request = {
 
 It is important to note that all of the params of the 'request' objects returned by the `all` function will be present in the 'request' object even though our example only uses `slug`.
 
-### 5. Hooks are Executed Until the `data` function is Run
+### 5. Hooks are Executed Until the `data` function is Executed
 
 The data flows through all of the hooks until it reaches a route's `data` function.
 
 How you modify the data in your `data` function is up to you. Anything you can do in Node.js you can do here.
-
-It is important to know that the `data` parameter that is passed to this function may not be empty. If you simply `return yourData` then you may get unexpected outcomes from plugins or hooks.
 
 ```javascript
 module.exports = async ({ query, settings, request, data }) => {
@@ -957,10 +956,10 @@ module.exports = async ({ query, settings, request, data }) => {
   // const yourData = await query.db(`SELECT * FROM city WHERE slug = $1`, [request.slug])
   // or
   // const yourData = await query.api.get(`https://yourdata.com/api/city/${request.slug}`)...
-  return {
-    ...data,
-    ...yourData,
+  const yourData = {
+    sweet: "Golden Metal",
   };
+  return yourData;
 };
 ```
 
@@ -979,15 +978,18 @@ return {
 };
 ```
 
+You can debug this by setting `debug.hooks: true` in your `elder.config.js`.
+
 ### 7. The data Object is passed to the Svelte template
 
 In this example, `./src/routes/blog/Blog.svelte` may look like this:
 
-```javascript
+```html
 <script>
-  export let data; // here is the 'data' object we've been following. export let
-  settings; // Elder.js settings export let helpers; // Elder.js helpers and
-  user helpers. export let request; // 'request' object from above. ....
+  export let data; // here is the 'data' object we've been following.
+  export let settings; // Elder.js settings
+  export let helpers; // Elder.js helpers and user helpers.
+  export let request; // 'request' object from above. ....
 </script>
 ```
 
@@ -1123,3 +1125,62 @@ Often a quick regex on the `html` hook is enough, but if you'd like completely c
 
 1. Add `elderCompileHtml` to the `hooks.disable` array in your `elder.config.js`.
 1. Register a new function on the `compileHtml` hook and implement your desired functionality. (Look for `elderCompileHtml` in @elderjs/elderjs's `hooks.ts` file.)
+
+### Upgrading to v1.0.0:
+
+Below are the breaking changes between v1 and earlier versions:
+
+1. `link` helper is removed from templates. You can access it at `helpers.permalinks` the same way as before so `link.blog({slug: "foo"})` becomes `helpers.permalinks.blog({slug: "foo"})`
+1. `routeHtml` or `routeHTML` in the Layout.svelte in the Elder.js template has been changed to `templateHtml`. If your getting no output from your templates this is your issue. Rename this variable and things should work again.
+1. The order of stacks and hook priorities have been reversed. This may cause hooks to run out of order. Please look at your hooks. Before this update, hooks with a priority of 1 where the highest priority, now they are the lowest.
+1. `process.browser` replacements in rollup.config are now 'process.env.componentType' which will return `browser` or `server`. Remember process.env variables are strings. so `process.env.componentType === 'server'` is the correct way to check if a component is rendering on the server.
+1. There was a major rework to the `elder.config.js`. If you defined anything in the `elder.config.js` under the `locations` key you'll need to rework those into the `distDir`, `srcDir`, and `rootDir`.
+1. `siteUrl` in elder.config.js was changed to `origin` and you'll get an error if you don't set it.
+1. Remove automatic checking for a tsconfig. If you want to use typescript, please set your `srcDir` to the build folder found in your `tsconfig`.
+
+#### File / Hook Changes:
+
+1. The `./src/assets/` folder has been moved to `./assets/` (project root).
+1. You'll need to update your `copyAssetsToPublic` hook as shown below.
+1. You'll need to update your `rollup.config.js` to be updated as shown below.
+
+```javascript
+  // hooks.js
+  // replace your old copyAssetsToPublic
+  {
+    hook: 'bootstrap',
+    name: 'copyAssetsToPublic',
+    description:
+      'Copies /src/assets/ to the assets folder defined in the elder.config.js. This function helps support the live reload process.',
+    run: ({ settings }) => {
+      // note that this function doesn't manipulate any props or return anything.
+      // It is just executed on the 'bootstrap' hook which runs once when Elder.js is starting.
+
+      // copy assets folder to public destination
+      glob.sync(path.join(settings.rootDir, '/assets/**/*')).forEach((file) => {
+        const parsed = path.parse(file);
+        // Only write the file/folder structure if it has an extension
+        if (parsed.ext && parsed.ext.length > 0) {
+          const relativeToAssetsArray = parsed.dir.split('assets');
+          relativeToAssetsArray.shift();
+
+          const relativeToAssetsFolder = `.${relativeToAssetsArray.join()}/`;
+          const p = path.parse(path.resolve(settings.distDir, relativeToAssetsFolder));
+          fs.ensureDirSync(p.dir);
+          fs.outputFileSync(
+            path.resolve(settings.distDir, `${relativeToAssetsFolder}${parsed.base}`),
+            fs.readFileSync(file),
+          );
+        }
+      });
+    },
+  },
+```
+
+```javascript
+// replace your old rollup.config.js
+const { getRollupConfig } = require("@elderjs/elderjs");
+const svelteConfig = require("./svelte.config");
+
+module.exports = [...getRollupConfig({ svelteConfig })];
+```
