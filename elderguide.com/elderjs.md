@@ -1102,6 +1102,24 @@ A function that generates all of the Elder.js required `rollup` output.
 
 See the clonable template for the minimum viable rollup config.
 
+#### Replacements
+
+If you need to add values to be replaced during bundling, you can do so like this:
+
+```javascript
+const { getRollupConfig } = require("@elderjs/elderjs");
+const svelteConfig = require("./svelte.config");
+module.exports = [
+  ...getRollupConfig({
+    svelteConfig,
+    rollupConfig: {
+      replacements: { "http://localhost:4020": "https://production.com" },
+      // object keys are replaced by values.
+    },
+  }),
+];
+```
+
 ### `getElderConfig`
 
 A helper function that returns the user's `elder.config.js` with defaults added in where they aren't defined.
