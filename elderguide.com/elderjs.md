@@ -378,7 +378,7 @@ module.exports = [
     hook: 'bootstrap',
     name: 'addDbToQuery',
     description: 'Adds our db object to the query object',
-    priority: 2,  // lower is more important. The system runs it’s hooks at priority of 1.
+    priority: 2,  // lower is less important.
     run: async ({ query }) => {
       return {
         query: { ...query, db },
@@ -539,9 +539,7 @@ export type StackItem = {
 export type Stack = Array<StackItem>;
 ```
 
-In short a stack is an array of objects that are concatenated together in order. Think of it like a queue. An item with a priority of 1 is the highest priority. An item with a priority of 100 is the lowest.
-
-(Feedback please: Should we rename priority or 'order'? Is the 1-100 priority intuitive?)
+In short a stack is an array of objects that are concatenated together in order. Think of it like a queue. An item with a priority of 1 is the lowest priority. An item with a priority of 100 is the highest.
 
 Hooks can add items to the stack, when the stack is processed it is sorted in order of priority and then all strings are concatenated.
 
@@ -601,7 +599,7 @@ const plugin: PluginOptions = {
       hook: "requestComplete",
       name: "uploadDataObjectToS3",
       description: "Uploads a data.json file to s3",
-      priority: 100, // we want it to be last
+      priority: 1, // we want it to be last
       run: async ({ data, settings, request, plugin }) => {
         // console.log(plugin.test) => true
         if (settings.build === true && settings.deploy === true) {
@@ -624,7 +622,7 @@ const plugin: PluginOptions = {
       hook: "requestComplete",
       name: "uploadHtmlToS3",
       description: "Uploads a html file to s3 bucket.",
-      priority: 100, // we want it to be last
+      priority: 1, // we want it to be last
       run: async ({ settings, request, html, plugin }) => {
         if (settings.build === true && settings.deploy === true) {
           if (plugin.config.dataBucket && plugin.config.htmlBucket.length > 0) {
