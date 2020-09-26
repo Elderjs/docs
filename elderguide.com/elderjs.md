@@ -1069,7 +1069,7 @@ Over the following 6 months as we pushed the site towards production, we used th
 
 We launched to production with a mix of `lit-html` with a few helper functions to hydrate/ssr Svelte components mixed in.
 
-While we had always planned on refactoring once we hit production, a moment of genius from [@kev](https://github.com/kevmodrome) in the Svelte discord prompted a major breakthrough that allowed us to use Svelte 100% for templating and still get partial hydration even thought Svelte doesn’t support it.
+While we had always planned on refactoring once we hit production, a moment of genius from [Kevin over at Svelte School](https://svelte.school) prompted a major breakthrough that allowed us to use Svelte 100% for templating and still get partial hydration even thought Svelte doesn’t support it.
 
 Excited we completely completely rewrote our system to take advantage of this breakthrough and add in easy plugin/customization support so anyone could use it to build sites.
 
