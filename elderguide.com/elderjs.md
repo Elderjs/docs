@@ -378,7 +378,7 @@ module.exports = [
     hook: 'bootstrap',
     name: 'addDbToQuery',
     description: 'Adds our db object to the query object',
-    priority: 2,  // lower is less important.
+    priority: 99,  // higher is more important. Since we want to be able to use the DB in other hooks that may be on the bootstrap hook, higher is better.
     run: async ({ query }) => {
       return {
         query: { ...query, db },
