@@ -767,7 +767,7 @@ If you aren't familiar with shortcodes, they are just strings that can wrap cont
 - Self Closing: `{{shortcode attribute="" /}}`
 - Wrapping: `{{shortcode attribute=""}}wraps{{/shortcode}}`
 
-**NOTE:** The `{{` and `}}` brackets vary from system to system and can be configured in your `elder.config.js`.
+**NOTE:** The `{{` and `}}` brackets vary from system to system and can be configured in your `elder.config.js`. However the `/` prefix for the closing bracket is not configurable. You may therefore need to translate shortcodes written in another format into this format expected by Elder.js, with [a simple string replace strategy](https://gist.github.com/sw-yx/d5910b613e6f7cec3a849c1a870c1598).
 
 In Elder.js shortcodes are added in your `./src/shortcode.js` or via plugins.
 
