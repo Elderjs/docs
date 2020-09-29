@@ -1139,6 +1139,22 @@ A helper function that returns the user's `elder.config.js` with defaults added 
 
 ## FAQ
 
+### How can I disable a hook?
+
+You can disable core Elder.js hooks, just like any other hook. Simply add the hook `name` to the `hooks.disable` array in your `elder.config.js`.
+
+A full list of all of the hooks can be [found in the hooks.ts](https://github.com/Elderjs/elderjs/blob/master/src/hooks.ts).
+
+For instance, if you wanted to disable the intersection observer, simply make sure your `hooks.disable` array includes `elderAddDefaultIntersectionObserver` as shown below:
+
+```javascript
+// elder.config.js, truncated
+
+hooks: {
+  disable: ['elderAddDefaultIntersectionObserver'],
+},
+```
+
 ### How can I copy files to public?
 
 The [template project has a hook](https://github.com/Elderjs/template/blob/master/src/hooks.js) that copies your `./assets/` folder to the 'distDir' location defined in your `elder.config.js`.
