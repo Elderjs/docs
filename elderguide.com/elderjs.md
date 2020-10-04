@@ -94,6 +94,26 @@ Let the build finish.
 npx sirv-cli public
 ```
 
+## Why We Built Elder.js
+
+When we set out to build elderguide.com we tested 6 different static site generators (Gatsby, Next.js, Nuxt.js, 11ty, Sapper and Hydrogen.js) and ultimately realized there wasn’t a solution that ticked all of our boxes.
+
+On our journey we had 3 major realizations:
+
+1. Most SSGs are built for either simple sites/blogs or for full scale "app frameworks" that have added an 'export' process added as an afterthought.
+1. Fetching data from multiple sources (dbs, apis, config files, markdown files) can lead to major code spaghetti.
+1. Client side routing adds a huge amount of complexity (and bundle size) to initial loads for very little SEO benefit. If you aren’t building an App, why would we want to fully hydrate our JS framework just for faster routing? Browsers are great at routing… we should only be hydrating things that need to be hydrated.
+
+Initially we decided to go with Sapper but hit major data roadblocks and issues unusable build times and development reload times.
+
+In an afternoon of frustration, we whipped up a very rudimentary SSG with a complex and error prone process of adding Svelte components… but it worked. #productionready
+
+After shipping ElderGuide.com to production we were working on a refactor when a moment of genius from [Kevin over at Svelte School](https://svelte.school) prompted a major breakthrough that allowed us to use Svelte 100% for templating and still get partial hydration even thought Svelte doesn’t support it.
+
+After much consideration we decided to open source the project so others could use it.
+
+We can't wait to see what you build with it.
+
 ## Routes
 
 At the core of any site are it's "routes" or templates.
@@ -107,134 +127,56 @@ They are:
 
 ### Route.js
 
-`route.js` files are required to have an `all` function, a `permalink` function, and an optional `data` function.
+`route.js` files consist of a `permalink` function, an `all` function, and a `data` function.
 
-Here is what a route for a website's homepage might look like it's simplest form.
+Elder.js uses "explicit routing" instead of the more common "parameter based" routing found in most frameworks like `express`.
+
+At first, Elder.js' non-conventional routing can be intimidating, but it offers some major benefits discussed below while streamlining data flow in complex sites.
+
+Let's look at an example of how you'd setup a route like `/blog/:slug/` where there are only 2 blogposts.
 
 ```javascript
-// ./src/routes/home/route.js
+// ./src/routes/blog/route.js
 module.exports = {
-  // template: 'Home.svelte' is assumed if not defined. (note: capitalized first letter.)
-  // layout: 'Layout.svelte' is assumed if not defined.
-  all: async () => [{ slug: '/' }], // an array of request objects. A slug is required for each.
-  permalink: ({ request, settings }) => request.slug, // a sync function that turns request objects into relative urls.
-  data: async ({ query, request, data }) => {
-  // do magic to get data from your data store.
-  const externalData = await query.db(`SELECT * FROM city WHERE slug = $1`, [request.slug])
-  // const externalData = await query.fetch(`https://yourdata.com/api/city/${request.slug}`)
+  template: 'Blog.svelte',
+  permalink: ({ request }) => `/blog/${request.slug}/`, // this is the same as /blog/:slug/ in 'parameter based' routing.
+  all: async () => {
+    // The all function returns an array of all possible "request" objects for a route.
+    // Here we are explicitly defining every possible variation of this route.
+    return [{ slug: 'blogpost-1' }, {slug: 'blogpost-2'}],
+  },
+  data: async ({ request }) => {
+  // The object returned here will be available in the Blog.svelte as the 'data' prop.
   return {
-    ...data,
-    // ...externalData
+    blogpost: `This is the blogpost for the slug: ${request.slug}`.
   }
 };
 ```
 
-Three things are happening here:
+Here is what is happening in plain English:
 
-- `all()`: The all function returns an array of all of the "request" objects for a given route. Since this is the homepage, it returns an array with a single request object of `{slug: '/'}`.
-- `permalink()`: The permalink function transforms request objects into permalinks. In this example, the "permalink" for `{slug: '/'}` is `/`. This makes sense because "/" is the relative url of the homepage of a site.
-- `data()`: The data function takes the data passed in and returns a new data object with data fetched for this specific route. (This is optional)
+- `permalink()`: The permalink function is similar to your standard route definition you'd see with placeholders. This means `/blog/:slug/` would be defined as `/blog/${request.slug}/`. The permalink function's job is to take the `request` objects returned from `all` and transform them into relative urls.
+- `all()`: This async function returns an array of all of the `request` objects for a given route. Often this array may come from a data store but in this example we're explicitly saying we only have 2 blog posts, so only two pages will be generated.
+- `data()`: The data function prepares the data required in the `Blog.svelte` file. Whatever object is returned will be available as the `data` prop. In the example we are just returning a static string, but you could also hit an external CMS, query a database, or read from the file system. Anything you can do in node, you can do here.
 
-**NOTE:** A route's `permalink` function must be synchronous.
-
-### all() Function
-
-Here is the function signature for a `route.js` all function:
+In this example, we're just returning a simple object in our `data()` function, but we could have easily used `node-fetch` and gotten our blogpost from a CMS or used `fs` to read from the filesystem:
 
 ```javascript
-all: async ({ settings, query, data, helpers }): Array<Object> => {
-  // settings: this describes the Elder.js settings at initialization.
-  // query: an empty object that is usually populated on the 'bootstrap' hook with a database connection or api connection. This is sharable throughout all hooks and functions.
-  // data: any data set on the 'bootstrap' hook.
-  return Array<Object>;
-}
+const blogpost = await fetch(
+  `https://api.mycms.com/getBySlug/${request.slug}/`
+).then((res) => res.json());
 ```
 
-### permalink() Function
+### Why Routing Differs from Express-like Frameworks
 
-Here is the function signature for a `route.js` permalink function:
+Elder.js' approach to routing is unconventional but it offers several distinct advantages, the two biggest are:
 
-```javascript
-permalink: ({ request, settings }): String => {
-  // NOTE: permalink must be sync. Async is not supported.
-
-  // request: this is the object received from the all() function. Generally we recommend passing a 'slug' parameter but you can use any naming you want.
-  // settings: this describes the Elder.js bootstrap settings.
-  return String;
-};
-```
-
-### data() Function
-
-Whether you’re building a personal blog or complex data driven SEO site, a route's `data` function is the recommend place to fetch (from a db, api, or other source) and prepare data to be consumed by your Svelte templates.
-
-Here is the function signature for a `route.js` data function:
-
-```javascript
-data: async ({
-  data,
-  query,
-  helpers,
-  settings,
-  request,
-  errors,
-  perf,
-  allRequests,
-}): Object => {
-  // data is any data set from plugins or hooks. Make sure that the object that is returned extends the data object.
-  return Object;
-};
-```
-
-Here is what a common `data` function may look like:
-
-```javascript
-module.exports = async ({ query, settings, request, data }) => {
-  // do magic to get data from your data store.
-  const externalData = await query.db(`SELECT * FROM city WHERE slug = $1`, [
-    request.slug,
-  ]);
-  // or
-  // const externalData = await query.api.get(`https://yourdata.com/api/city/${request.slug}`)...
-  return {
-    ...data,
-    ...externalData,
-  };
-};
-```
-
-In short we're taking the `request` object returned from a route's `all` function and hitting an external data store.
-
-It's important to note that we're also merging this external data with the data passed into the `data` function so we are picking up any data set by hooks or plugins.
-
-### How Routing Differs from Express-like Frameworks
-
-Together the `all` and `permalink` functions are used to complete map of all of the urls a specific route should handle.
-
-If you are familiar with `express` or `polka` then you are likely familiar with defining your routes as `/blog/:id/` where `:id` is a parameter that is passed in a route.
-
-While this type of routing is familiar to many in the JS community, it has some distinct limitations when building a static site generator. Specifically:
-
-1. When generating your static site, 'crawl' all of the links of a site to generate a complete map of urls.
-1. Complex logic or regex is needed to have `/senior-living/:nursingHomeId/` and `/senior-living/:blogId/`.
-1. It assumes that all parameters needed to generate a page can be determined by the URL.
-
-### Inverted Routing
-
-To solve the issues inherent with express-like routing, Elder.js uses what we refer to as an "inverted router" to build a map of all available pages.
-
-How this works, is that for each `route` Elder.js:
-
-1. Compiles all of the `request` objects by running the route's `all` function.
-1. The request objects are then passed to the `permalink` function to generate URLs.
-
-Once it has gathered all of the permalinks, Elder.js now has a complete map of every page it should build or handle SSR for.
-
-This approach was chosen to give the user complete control of their URL structure instead of being bound by the limitations of being able to determine a route solely by a URL.
+1. Unlike traditional 'parameter based' routing, Elder.js' does not have to **crawl** all of the links of a site to know what pages need to be generated. This allows for fully parallelized build times that scale with CPU resources. (As of October 2020, ElderGuide.com has ~20k pages and builds in 1 minute 22 seconds.)
+1. Users have full control over their URL structure. No complex regex is needed to have `/senior-living/:facilityId/` and `/senior-living/:articleId/` and `/senior-living/:parentCompanyId`. This also makes **i18n** and **l10n** much more approachable.
 
 ### Route.js Best Practices:
 
-With the simple example out of the way, let's talk about best practices and let's look at a more complex example of a `route.js` file.
+With the simple `route.js` example out of the way, let's talk about best practices and let's look at a more complex example of a `route.js` file.
 
 **Best Practice:** A route's `all` function should return the minimum viable data points needed generate a page.
 
@@ -242,9 +184,9 @@ With the simple example out of the way, let's talk about best practices and let'
 
 When people first encounter Elder.js there is a strong temptation to load the `request` objects returned by a route's `all` function with tons of data.
 
-While this approach works it doesn't scale very well. Fetching, preparing, and processing data should be done in your `data` function.
+While this approach works, it doesn't scale very well. Fetching, preparing, and processing data should be done in your `data` function.
 
-That said, it is recommend that you only include the bare minimum required by your database, api, or data store and then organize the rest of the data fetching, preparing, and organization in the route's `data` function.
+That said, it is recommend that you only include the bare minimum required to query your database, api, file system, or data store on the `request` object. From there do all of the data fetching, preparing, and organization in the route's `data` function.
 
 **Real World Example**
 
@@ -258,74 +200,192 @@ These data points are:
 1. The City slug
 1. The Country slug
 
-Here is what your route.js would look like to support `/en/spain/barcelona/` and `/es/espana/barcelona/`.
+Here is what a minimal route.js would look like to support `/en/spain/barcelona/` and `/es/espana/barcelona/`.
 
 ```javascript
 // ./src/routes/city/route.js
 module.exports = {
-  all: async ({ query }) => {
-    // await query.db(`your implementation here`) or await query.api(`get data`);
+  permalink: ({ request, settings }) =>
+    `/${request.lang}/${request.country.slug}/${request.slug}/`,
+  all: async () => {
     return [
       { slug: "barcelona", country: { slug: "spain" }, lang: "en" },
       { slug: "barcelona", country: { slug: "espana" }, lang: "es" },
     ];
   },
-  permalink: ({ request, settings }) =>
-    `/${request.lang}/${request.country.slug}/${request.slug}/`,
+  data: async ({ request }) => {
+    // discussed below.
+  },
 };
 ```
-
-From here each route's `data` function will have access to the `request` object returned by the `all` function.
 
 **Problems with Fat Request Objects**
 
-Imagine for a moment that we attempted to include all of the additional details needed to generate the page on our request object like this:
+Imagine for a moment that we attempted to include all of the additional details needed to generate the page for this route in our `request` objects like so:
 
 ```javascript
-[
-  { slug: 'barcelona', country: { slug: 'spain' }, lang: 'en', data: { hotels: 12, attractions: 14, promotions: ['English promotion'], ...lotsOfData } },
-  { slug: 'barcelona', country: { slug: 'espana' }, lang: 'es' data: { hotels: 12, attractions: 14, promotions: ['Spanish promotion'], ...lotsOfData } }
-]
+module.exports = {
+  // permalink function
+  all: async () => {
+    return [
+      { slug: 'barcelona', country: { slug: 'spain' }, lang: 'en', data: { hotels: 12, attractions: 14, promotions: ['English promotion'], ...lotsOfData } },
+      { slug: 'barcelona', country: { slug: 'espana' }, lang: 'es' data: { hotels: 12, attractions: 14, promotions: ['Spanish promotion'], ...lotsOfData } }
+    ]
+  }
+  // data function
+}
 ```
 
-Now imagine in your request object gets to your `data` function, you're adding in additional data and returning a data object that looks like:
+Now imagine in your `data` function looks like so and you're getting more data.
 
 ```javascript
-module.exports = async ({ query, request, data }) => {
-  // do magic to look up data from your data store.
-  // await query.db or query.api
+module.exports = {
+  // permalink function
+  all: async () => {
+    return [
+      { slug: 'barcelona', country: { slug: 'spain' }, lang: 'en', data: { hotels: 12, attractions: 14, promotions: ['English promotion'], ...lotsOfData } },
+      { slug: 'barcelona', country: { slug: 'espana' }, lang: 'es' data: { hotels: 12, attractions: 14, promotions: ['Spanish promotion'], ...lotsOfData } }
+    ]
+  },
+  data:  async ({ request }) => {
+    const hotels = : [
+        { ...hotel }, // imagine this has a lot of details
+        { ...hotel },
+        { ...hotel },
+        { ...hotel },
+        { ...hotel },
+      ];
 
-  return {
-    hotels: [
-      { ...hotel },
-      { ...hotel },
-      { ...hotel },
-      { ...hotel },
-      { ...hotel },
-    ],
-  };
-};
+    // this will now be available in your svelte template as your 'data' param.
+    return {
+      hotels,
+    };
+  },
+}
 ```
 
-Now you've got access to both the `request` and `data` objects in Svelte templates and you're asking yourself:
+With this implementation you've now got both `request` and `data` objects in Svelte templates and you're asking yourself:
 
-> Should I be accessing `request.data.hotels` or just `data.hotels.length`
+> Should I be accessing `request.data.hotels` or just `data.hotels.length` to get the number of hotels?
 
 Save yourself this headache by remembering: **skinny `request` objects, fat `data` functions**.
 
+Only store the minimum data needed on your `request` objects. Instead return all of the data required by the page from the `data` function.
+
 **Note:** If you're interested in **i18n** [please look at this issue](https://github.com/Elderjs/elderjs/issues/6) as robust support could be offered by a community plugin.
 
-### Database Connections, APIs, and External Data Sources
+**Database Connections, APIs, and External Data Sources**
 
 The `data` function of each route is designed to be the central place to fetch data for a route but the implementation details are very open ended and up to you.
 
 Just about anything you can do in Node.js you can do in a `data` function.
 
-That said, one of the most common things a `data` function will need to do is to connect to a remote data store.
-
-The recommended way of setting up that connection is [to populate the `query` object on the `bootstrap` hook](https://elderguide.com/tech/elderjs/#hook-example-1-bootstrap).
+That said, if you are hitting a DB and want to manage your connection in a reusable fashion, the recommended way of doing so is [to populate the `query` object on the `bootstrap` hook](https://elderguide.com/tech/elderjs/#hook-example-1-bootstrap).
 
 Using this pattern allows you to share a database connection across the entire lifecycle of your Elder.js site.
+
+**Cache Data Where Possible Within Route.js Files**
+If you have a data heavy calculation required to generate a page, look into calculating that data and caching it before your `module.exports` definition like so:
+
+```javascript
+// ./src/routes/city/route.js
+
+// do heavy calculation here
+// this prevents the data from being calculated each request
+const cityLookupObject = {
+   barcelona: {
+   // lots of data.
+  }
+}
+
+module.exports = {
+  permalink: ({ request, settings }) =>
+    `/${request.lang}/${request.country.slug}/${request.slug}/`,
+  all: async () => {
+    return [
+      { slug: "barcelona", country: { slug: "spain" }, lang: "en" },
+      { slug: "barcelona", country: { slug: "espana" }, lang: "es" },
+    ];
+  },
+  data: async ({ request }) => {
+
+    return {
+      city: cityLookupObject[request.slug];
+    }
+
+  },
+};
+```
+
+**Data Used in Multiple Routes**
+If you have data that is used in multiple routes, you can share that data between routes by populating the `data` object on the `boostrap` hook documented later in this guide.
+
+Assuming you have populated the `data.cities` with an array of cities on the `boostrap` hook you could access it like so:
+
+```javascript
+// ./src/routes/city/route.js
+module.exports = {
+  permalink: ({ request }) => `/${request.slug}/`,
+  all: async ({ data }) => data.cities,
+  data: async ({ request, data }) => {
+    return {
+      city: data.cities.find(city=> city.slug === request.slug);
+    }
+
+  },
+};
+```
+
+Data defined in `boostrap` is available on all routes.
+
+### all() Function Spec
+
+Here is the function signature for a `route.js` all function:
+
+```javascript
+all: async ({ settings, query, data, helpers }): Array<Object> => {
+  // settings: this describes the Elder.js settings at initialization.
+  // query: an empty object that is usually populated on the 'bootstrap' hook with a database connection or api connection. This is sharable throughout all hooks, functions, and shortcodes.
+  // data: any data set on the 'bootstrap' hook.
+  return Array<Object>;
+}
+```
+
+### permalink() Function Spec
+
+Here is the function signature for a `route.js` permalink function:
+
+```javascript
+permalink: ({ request, settings }): String => {
+  // NOTE: permalink must be sync. Async is not supported.
+
+  // request: this is the object received from the all() function. Generally we recommend passing a 'slug' parameter but you can use any naming you want.
+  // settings: this describes the Elder.js bootstrap settings.
+  return String;
+};
+```
+
+### data() Function Spec
+
+Whether you’re building a personal blog or complex data driven SEO site, a route's `data` function is the recommend place to fetch (from a db, api, or other source) and prepare data to be consumed by your Svelte templates.
+
+Here is the function signature for a `route.js` data function:
+
+```javascript
+data: async ({
+  data, // any data set by plugins or hooks on the 'bootstrap' hook
+  helpers, // Elder.js helpers and user helpers from the ./src/helpers/index.js` file.
+  allRequests, // all of the `request` objects returned by a route's all() function.
+  settings, // settings of Elder.js
+  request, // the requested page's `request` object.
+  errors, // any errors
+  perf, // the performance helper.
+  query, // search for 'query' in these docs for more details on it's use.
+}): Object => {
+  // data is any data set from plugins or hooks.
+  return Object;
+};
+```
 
 ## Hooks: How to Customize Elder.js
 
@@ -335,19 +395,34 @@ For a full overview of the hooks available, you can reference the [hookInterface
 
 In short there is a hook at every major step of the page generation process from system bootstrap (the `bootstrap` hook) all the way to writing html to your computer (on the `requestComplete` hook).
 
+### The Goal of Elder.js Hooks
+
+No project becomes a 'tangled mess' on day one. It happens over time.
+
+You or someone on your team makes a small "hacky" fix.
+
+This change was intended to be temporary but it falls off your team's radar.
+
+Over time these "hacky" fixes build up and slowly make a project hard to reason about and hard to work on.
+
+The goal of Elder.js' hook implementation is that any changes that don't fit in a `route.js` file are instead aggregated in a single `hooks.js` file where anyone on a team will know to expect to find any hidden complexity.
+
+The result of this approach is that of a project's **hacky** fixes are no longer scattered across a project, but instead live in a single self documenting location where users have complete but **predictable** control over the Elder.js page generation process.
+
+> The added benefit is that plugins can also tap into these hooks offering sharable functionality.
+
 ### Hook Interface: the `mutable` and `props` Arrays
 
-For each hook there are two arrays defined. `props` and `mutable` this defines the "contract" that the hook interface implements.
+Each Elder.js hook explicitly defines which `props` are available to a function registered on a hook along with which of those `props` are `mutable` by that function.
 
-In short, `props` represents the parameters that are available and `mutable` represents which of those parameters can be changed.
+This defines the "contract" that Elder.js' hook interface implements.
 
-This structure was implemented to keep all side effects limited and predictable.
+- `props` represents the parameters that are available to a function registered on a hook.
+- `mutable` represents which of the `props` can be changed on a specific hook.
 
-Under the hood, all items in the `props` array that aren't in the `mutable` array are passed as a [Proxy](https://javascript.info/proxy).
+This structure was implemented to keep mutation and side effects predictable.
 
-This allows Elder.js to enforce the [`hookInterface.ts`](https://github.com/Elderjs/elderjs/blob/master/src/hookInterface/hookInterface.ts) contract.
-
-It also keeps hooks/plugins that are shared publicly from doing unexpected things.
+> Under the hood, all items in the `props` array that aren't in the `mutable` array are passed as a [Proxy](https://javascript.info/proxy).
 
 ### Hook Lifecycle
 
@@ -398,10 +473,13 @@ If you wanted to initialize a database connection and make it available on all h
 
 **USER HOOKS:**
 
-Hooks can be defined in 2 places in your project.
+We recommend you define all of your hooks in your `./src/hooks.js` file.
 
-1. In your `./src/hooks.js` file. - _We recommend organizing all hooks in this file._ You can limit a function to run on a specific route by looking at `request.route === 'routeName'`.
-1. Within a plugin.
+It is also recommended that you organize them to be sequential with hook execution as show above.
+
+If you need to limit a function to only run on a specific route, you can do so by using `request.route === 'routeName'`.
+
+> Note: If you're finding your `./src/hooks.js` is becoming too big, resist the urge as long as possible to split it into sub files. We've found that even with 20+ hooks, as long as they are organized sequential to match hook execution, things stay maintainable.
 
 **SYSTEM HOOKS:**
 
@@ -417,131 +495,6 @@ They can be disabled by adding the hook name to the `hooks.disable` array in you
   }
   ...
 ```
-
-## Specifications and Config
-
-Below are details on common specifications and config requirements.
-
-### Config: `elder.config.js`
-
-By default Elder.js looks for an `elder.config.js` file in your project root and will import any settings there and merge them with the default.
-
-Below is what the default configuration file looks like. This is automatically generated if an `elder.config.js` file is missing.
-
-```javascript
-module.exports = {{output_default_config}}
-```
-
-### Elder.js Expected file structure
-
-Elder.js expects a specific file structure outlined below. This is why we recommend you start with the Elder.js template.
-
-You can configure or rename your src/build folders in your `elder.config.js`.
-
-```plaintext
-Project Root
-| elder.config.js
-| package.json
-| rollup.config.js
-| ... (other common stuff, .gitignore, svelte.config.js... etc)
-| -- src
-| -- | -- build.js
-| -- | -- server.js
-| -- | -- hooks.js
-| -- | -- shortcodes.js
-| -- helpers
-| -- | -- index.js
-| -- | -- ...
-| -- layouts
-| -- | -- Layout.svelte
-| -- routes
-| -- | -- [route] ('blog' in this example)
-| -- | -- | -- Blog.svelte
-| -- | -- | -- route.js
-| -- plugins
-| -- | -- [plugin] ('elderjs-plugin-markdown' for example)
-| -- | -- | -- index.js
-| -- components
-| -- | -- [component] ('Contact' in this example)
-| -- | -- | -- Contact.svelte
-
-(optional/recommended)
-| -- assets
-| -- | -- files to be copied to your public folder.
-```
-
-### Hook Specification
-
-Hooks are the core of how to make site level customizations. Below is the default spec for a hook.
-
-```javascript
-
-module.exports = {{output_hook_schema}}
-
-```
-
-### Plugin Specification
-
-Plugins are a bundle of hooks with their own closure scope based on the object that is returned by the `init()` function. This means that all hooks and shortcodes receive the plugin definition returned by the `init()` function and are able to store properties in that scope throughout the hook lifecycle. Below is the default specification for a plugin.
-
-```javascript
-
-module.exports = {{output_plugin_schema}}
-
-```
-
-### Route Specification
-
-Routes can be defined by plugins or by including a `./src/[routeName]/route.js` file.
-
-```javascript
-
-module.exports = {{output_route_schema}}
-
-```
-
-### Shortcode Specification
-
-Shortcodes are a great way to future proof your content. Below is the default shortcode specification. These should be defined in the array exported by your `./src/shortcodes.js`
-
-```javascript
-
-module.exports = [{{output_shortcode_schema}}]
-
-```
-
-### Requirements for `name` and `description` fields
-
-In various places such as on hooks, plugins, and stacks, you'll see that Elder.js requires `name` and `description` fields.
-
-While this requirement may seem like an added development burden initially, it makes it extremely easy for you to publicly share your hooks or bundle them into plugins in a way others can use. (Plus your future self will thank you when you need to modify your code a year from now.)
-
-These fields are also used to generate the pretty printouts of how long each hook is adding to your page generation time that you see when you enable `debug.performance = true` in your `elder.config.js`.
-
-<img src="https://elderguide.com/images/performance-debug-true.png" alt="Elder.js Performance Debug True" style="max-width:100%; margin: 1rem 0;" />
-
-As a team we've found build times to be especially important when building 10k+ page sites as 100ms adds 16+ minutes to your build time. What gets measured gets managed... and we know faster deploys leads to deploying more often.
-
-### Stacks: Predictable String Concatenation
-
-In a few places you may see that Elder.js is using 'stacks.' These are just our internal way of processing strings that need to be concatenated.
-
-Here are the type defs:
-
-```typescript
-export type StackItem = {
-  source: string;
-  string: string;
-  priority: number;
-  name: string;
-};
-
-export type Stack = Array<StackItem>;
-```
-
-In short a stack is an array of objects that are concatenated together in order. Think of it like a queue. An item with a priority of 1 is the lowest priority. An item with a priority of 100 is the highest.
-
-Hooks can add items to the stack, when the stack is processed it is sorted in order of priority and then all strings are concatenated.
 
 ## Plugins
 
@@ -1045,31 +998,130 @@ All further hooks are run until the 'request' has been completed.
 
 This includes user hooks, system hooks, and plugin hooks.
 
-## Why We Built Elder.js
+## Specifications and Config
 
-When we set out to build elderguide.com we tested 6 different static site generators (Gatsby, Next.js, Nuxt.js, 11ty, Sapper and Hydrogen.js) and ultimately realized there wasn’t a solution that ticked all of our boxes.
+Below are details on common specifications and config requirements.
 
-On our journey we had 3 major realizations:
+### Config: `elder.config.js`
 
-1. Most SSGs are built for either simple sites/blogs or for full scale "app frameworks" that have added an 'export' process added as an afterthought.
-1. Fetching data from multiple sources (dbs, apis, config files, markdown files) can lead to major code spaghetti.
-1. Client side routing adds a huge amount of complexity (and bundle size) to initial loads for very little SEO benefit. If you aren’t building an App, why would we want to fully hydrate our JS framework just for faster routing? Browsers are great at routing… we should only be hydrating things that need to be hydrated.
+By default Elder.js looks for an `elder.config.js` file in your project root and will import any settings there and merge them with the default.
 
-Further, all of the mature JS alternatives (Gatsby, Next.js, Nuxt.js) are all tightly coupled with React/Vue. This was a bummer as we loved the amazing developer experience Svelte offers.
+Below is what the default configuration file looks like. This is automatically generated if an `elder.config.js` file is missing.
 
-After our testing we decided to go with Sapper as we really wanted to work with Svelte but ultimately hit some roadblocks.
+```javascript
+module.exports = {{output_default_config}}
+```
 
-This led us to the decision of rewriting all of our Svelte components to React/Vue or finding a different SSG.
+### Elder.js Expected file structure
 
-In an afternoon of frustration, we whipped up a very rudimentary SSG with a mindbogglingly complex and error prone process of adding Svelte components… but hey, it worked. #productionready
+Elder.js expects a specific file structure outlined below. This is why we recommend you start with the Elder.js template.
 
-Over the following 6 months as we pushed the site towards production, we used this SSG as our playground to explore the best way to build an SEO focused, data driven, statically exported sites.
+You can configure or rename your src/build folders in your `elder.config.js`.
 
-We launched to production with a mix of `lit-html` with a few helper functions to hydrate/ssr Svelte components mixed in.
+```plaintext
+Project Root
+| elder.config.js
+| package.json
+| rollup.config.js
+| ... (other common stuff, .gitignore, svelte.config.js... etc)
+| -- src
+| -- | -- build.js
+| -- | -- server.js
+| -- | -- hooks.js
+| -- | -- shortcodes.js
+| -- helpers
+| -- | -- index.js
+| -- | -- ...
+| -- layouts
+| -- | -- Layout.svelte
+| -- routes
+| -- | -- [route] ('blog' in this example)
+| -- | -- | -- Blog.svelte
+| -- | -- | -- route.js
+| -- plugins
+| -- | -- [plugin] ('elderjs-plugin-markdown' for example)
+| -- | -- | -- index.js
+| -- components
+| -- | -- [component] ('Contact' in this example)
+| -- | -- | -- Contact.svelte
 
-While we had always planned on refactoring once we hit production, a moment of genius from [Kevin over at Svelte School](https://svelte.school) prompted a major breakthrough that allowed us to use Svelte 100% for templating and still get partial hydration even thought Svelte doesn’t support it.
+(optional/recommended)
+| -- assets
+| -- | -- files to be copied to your public folder.
+```
 
-Excited we completely completely rewrote our system to take advantage of this breakthrough and add in easy plugin/customization support so anyone could use it to build sites.
+### Hook Specification
+
+Hooks are the core of how to make site level customizations. Below is the default spec for a hook.
+
+```javascript
+
+module.exports = {{output_hook_schema}}
+
+```
+
+### Plugin Specification
+
+Plugins are a bundle of hooks with their own closure scope based on the object that is returned by the `init()` function. This means that all hooks and shortcodes receive the plugin definition returned by the `init()` function and are able to store properties in that scope throughout the hook lifecycle. Below is the default specification for a plugin.
+
+```javascript
+
+module.exports = {{output_plugin_schema}}
+
+```
+
+### Route Specification
+
+Routes can be defined by plugins or by including a `./src/[routeName]/route.js` file.
+
+```javascript
+
+module.exports = {{output_route_schema}}
+
+```
+
+### Shortcode Specification
+
+Shortcodes are a great way to future proof your content. Below is the default shortcode specification. These should be defined in the array exported by your `./src/shortcodes.js`
+
+```javascript
+
+module.exports = [{{output_shortcode_schema}}]
+
+```
+
+### Requirements for `name` and `description` fields
+
+In various places such as on hooks, plugins, and stacks, you'll see that Elder.js requires `name` and `description` fields.
+
+While this requirement may seem like an added development burden initially, it makes it extremely easy for you to publicly share your hooks or bundle them into plugins in a way others can use. (Plus your future self will thank you when you need to modify your code a year from now.)
+
+These fields are also used to generate the pretty printouts of how long each hook is adding to your page generation time that you see when you enable `debug.performance = true` in your `elder.config.js`.
+
+<img src="https://elderguide.com/images/performance-debug-true.png" alt="Elder.js Performance Debug True" style="max-width:100%; margin: 1rem 0;" />
+
+As a team we've found build times to be especially important when building 10k+ page sites as 100ms adds 16+ minutes to your build time. What gets measured gets managed... and we know faster deploys leads to deploying more often.
+
+### Stacks: Predictable String Concatenation
+
+In a few places you may see that Elder.js is using 'stacks.' These are just our internal way of processing strings that need to be concatenated.
+
+Here are the type defs:
+
+```typescript
+export type StackItem = {
+  source: string;
+  string: string;
+  priority: number;
+  name: string;
+};
+
+export type Stack = Array<StackItem>;
+```
+
+In short a stack is an array of objects that are concatenated together in order. Think of it like a queue. An item with a priority of 1 is the lowest priority. An item with a priority of 100 is the highest.
+
+Hooks can add items to the stack, when the stack is processed it is sorted in order of priority and then all strings are concatenated.
 
 ## Automatic Behavior
 
