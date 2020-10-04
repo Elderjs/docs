@@ -248,7 +248,7 @@ module.exports = {
     ]
   },
   data:  async ({ request }) => {
-    const hotels = : [
+    const hotels = [
         { ...hotel }, // imagine this has a lot of details
         { ...hotel },
         { ...hotel },
@@ -257,6 +257,7 @@ module.exports = {
       ];
 
     // this will now be available in your svelte template as your 'data' param.
+    // you could access all of the hotel details at `data.hotels`
     return {
       hotels,
     };
