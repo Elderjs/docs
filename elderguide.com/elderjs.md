@@ -286,6 +286,7 @@ That said, if you are hitting a DB and want to manage your connection in a reusa
 Using this pattern allows you to share a database connection across the entire lifecycle of your Elder.js site.
 
 **Cache Data Where Possible Within Route.js Files**
+
 If you have a data heavy calculation required to generate a page, look into calculating that data and caching it before your `module.exports` definition like so:
 
 ```javascript
@@ -319,6 +320,7 @@ module.exports = {
 ```
 
 **Data Used in Multiple Routes**
+
 If you have data that is used in multiple routes, you can share that data between routes by populating the `data` object on the `boostrap` hook documented later in this guide.
 
 Assuming you have populated the `data.cities` with an array of cities on the `boostrap` hook you could access it like so:
