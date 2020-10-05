@@ -172,7 +172,7 @@ const blogpost = await fetch(
 Elder.js' approach to routing is unconventional but it offers several distinct advantages, the two biggest are:
 
 1. Unlike traditional 'parameter based' routing, Elder.js' does not have to **crawl** all of the links of a site to know what pages need to be generated. This allows for fully parallelized build times that scale with CPU resources. (As of October 2020, ElderGuide.com has ~20k pages and builds in 1 minute 22 seconds.)
-1. Users have full control over their URL structure. No complex regex is needed to have `/senior-living/:facilityId/` and `/senior-living/:articleId/` and `/senior-living/:parentCompanyId`. This also makes **i18n** and **l10n** much more approachable.
+1. Users have full control over their URL structure. No complex regex is needed to have `/senior-living/:facilityId/` and `/senior-living/:articleId/` and `/senior-living/:parentCompanyId/`. This also makes **i18n** and **l10n** much more approachable.
 
 ### Route.js Best Practices:
 
