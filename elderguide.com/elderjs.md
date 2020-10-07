@@ -1226,7 +1226,7 @@ Note: If you really want to do data fetching and manipulation in your templates 
 
 ### How Does Elder.js Differ From Sapper?
 
-Sapper is a full stack Svelte framework that does server site rendering and supports static exporting of your site.
+Sapper is a full stack Svelte framework that does server side rendering and supports static exporting of your site.
 
 While we found Sapper to be a nice solution for small sites, when we tried to use it to build out elderguide.com we hit some major roadblocks:
 
