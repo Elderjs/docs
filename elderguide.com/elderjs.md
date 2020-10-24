@@ -523,7 +523,7 @@ To use a plugin, it must be registered in your `elder.config.js` and can be load
 
 ### Writing Your Own Plugin
 
-If you're looking to write you own plugin for Elder.js, [we've setup an easy template to clone](https://github.com/Elderjs/plugins/).
+If you're looking to write you own plugin for Elder.js, [we've setup an easy template to clone](https://github.com/Elderjs/plugin-template).
 
 Here is the command you can use to clone it locally without all of the git history using degit.
 
