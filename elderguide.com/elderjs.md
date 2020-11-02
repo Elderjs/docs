@@ -91,7 +91,8 @@ npx sirv-cli public
 
 ## Elder.js Intro Video:
 
-[youtube id="R9oPCfd1FB8" /]
+
+[![Svelte Summit Thumbnail](https://user-images.githubusercontent.com/44205918/97919507-2e892700-1d58-11eb-8b08-953eec4edfe4.png)](http://www.youtube.com/watch?v=R9oPCfd1FB8 "Svelte Summit on Youtube")
 
 The above talk was given at Svelte Summit 2020 and is a great intro to the concepts behind Elder.js.
 
@@ -371,7 +372,7 @@ permalink: ({ request, settings }): String => {
 
 ### data() Function Spec
 
-Whether you’re building a personal blog or complex data driven SEO site, a route's `data` function is the recommend place to fetch (from a db, api, or other source) and prepare data to be consumed by your Svelte templates.
+Whether you’re building a personal blog or complex data driven SEO site, a route's `data` function is the recommend place to fetch (from a db, api, or other source) and prepare data to be consumed by your templates.
 
 Here is the function signature for a `route.js` data function:
 
