@@ -1194,18 +1194,19 @@ Elder.js uses the [svelte-preprocess package](https://github.com/sveltejs/svelte
 ```
 npm install -D typescript node-sass
 ```
+
 For more info about what dependecies you need to install to enable the preprocessor of your choice you can [look at the installation guide of svelte-preprocess](https://github.com/sveltejs/svelte-preprocess/blob/master/docs/getting-started.md#1-installation)
 
 Then you can start using them in your svelte file by using lang="ts" or lang="scss" in your script and style block respectively. To change the settings of your preprocessor, open the svelte.config.js file and configure it using the object passed to sveltePreprocess like this
 
 ```js
-const sveltePreprocess = require('svelte-preprocess');
+const sveltePreprocess = require("svelte-preprocess");
 
 module.exports = {
   preprocess: [
     sveltePreprocess({
       postcss: {
-        plugins: [require('autoprefixer')],
+        plugins: [require("autoprefixer")],
       },
     }),
   ],
@@ -1216,18 +1217,14 @@ Go through the [svelte-preprocess docs](https://github.com/sveltejs/svelte-prepr
 
 ### Extra setup for typescript
 
-You should be able to use typescript in svelte files by following the instructions above but for customizing your typescript config we reccommend you rename the sample.tsconfig.json in the default template to tsconfig.json and use that as your typescript config. You should **remove the rootDir and module option from the compilerOptions to avoid some errors**, to find out more about that problem take a look at [this PR](https://github.com/Elderjs/template/pull/27). You can also extend [svelte/tsconfig]
-(https://www.npmjs.com/package/@tsconfig/svelte) which is the recommended config by the svelte team. To run typescript checks as part of your linting process or CI/CD step install the [svelte-check package](https://www.npmjs.com/package/svelte-check) and add a script to your package.json to run this tool.
+You should be able to use typescript in svelte files by following the instructions above but for customizing your typescript config we recommend you rename the sample.tsconfig.json in the default template to tsconfig.json and use that as your typescript config. You can also extend [svelte/tsconfig]
+(https://www.npmjs.com/package/@tsconfig/svelte) which is the recommended config by the Svelte team. To run typescript checks as part of your linting process or CI/CD step install the [svelte-check package](https://www.npmjs.com/package/svelte-check) and add a script to your package.json to run this tool.
 
-```    
+```
 "type-check": "svelte-check"
 ```
 
 **Typescript support for non-svelte files is coming soon, track the [progress here](https://github.com/Elderjs/elderjs/pull/72)**
-
-
-
-
 
 ## FAQ
 
