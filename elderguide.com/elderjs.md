@@ -91,7 +91,7 @@ npx sirv-cli public
 
 ## Elder.js Intro Video:
 
-[youtube id="R9oPCfd1FB8" /]
+[![Svelte Summit Thumbnail](https://elderguide.com/images/elderjs-svelte-summit-video-thumb.png)](http://www.youtube.com/watch?v=R9oPCfd1FB8 "Svelte Summit on Youtube")
 
 The above talk was given at Svelte Summit 2020 and is a great intro to the concepts behind Elder.js.
 
