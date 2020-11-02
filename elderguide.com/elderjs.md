@@ -41,28 +41,23 @@ As September 2020, the ElderGuide.com team expects to maintain this project at l
 
 The quickest way to get started is to get started with the [Elder.js template](https://github.com/Elderjs/template) using [degit](https://github.com/Rich-Harris/degit):
 
-Here is a demo of the template: [https://elderjs.netlify.app/](https://elderjs.netlify.app/)
-
 **Step 1: Clone Template**
 
 ```bash
 npx degit Elderjs/template elderjs-app
 cd elderjs-app
+yarn # or npm install
 ```
 
-**Step 2: Install Dependencies**
-
-```bash
-npm install # or just yarn
-```
-
-**Step 3: Start the Project**
+**Step 2: Start the Project**
 
 ```bash
 npm start
 ```
 
 Navigate to <a href="localhost:3000" rel="nofollow">http://localhost:3000</a>. You should see your app running.
+
+You can also see a live demo of this template: [https://elderjs.netlify.app/](https://elderjs.netlify.app/)
 
 ### Developing using the Template:
 
