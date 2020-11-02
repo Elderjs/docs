@@ -89,6 +89,12 @@ Let the build finish.
 npx sirv-cli public
 ```
 
+## Elder.js Intro Video:
+
+[youtube id="R9oPCfd1FB8" /]
+
+The above talk was given at Svelte Summit 2020 and is a great intro to the concepts behind Elder.js.
+
 ## Why We Built Elder.js
 
 When we set out to build elderguide.com we tested 6 different static site generators (Gatsby, Next.js, Nuxt.js, 11ty, Sapper and Hydrogen.js) and ultimately realized there wasn’t a solution that ticked all of our boxes.
@@ -720,7 +726,7 @@ If you aren't familiar with shortcodes, they are just strings that can wrap cont
 
 **NOTE:** The `{{` and `}}` brackets vary from system to system and can be configured in your `elder.config.js`. However the `/` prefix for the closing bracket is not configurable. You may therefore need to translate shortcodes written in another format into this format expected by Elder.js, with [a simple string replace strategy](https://gist.github.com/sw-yx/d5910b613e6f7cec3a849c1a870c1598).
 
-In Elder.js shortcodes are added in your `./src/shortcode.js` or via plugins.
+In Elder.js shortcodes are added by defining them in a project's `./src/shortcode.js` or via plugins.
 
 ### Use Cases For Shortcodes:
 
@@ -876,6 +882,22 @@ module.exports = [
   },
 ];
 ```
+
+### Using Shortcodes from Within Svelte
+
+Sometimes you'll want to use a shortcode from with your Svelte route files or layouts.
+
+To do this there is a helper function to inline shortcodes in a "Svelte Friendly" way:
+
+```svelte
+<!-- Layout.svelte or RouteName.svelte -->
+<script>
+export let helpers;
+</script>
+{@html helpers.shortcode({ name: 'shortcodeName', props: { background: "blue" }, content: "Inner content" })}
+```
+
+This results in `{{shortcodeName background="blue"}}Inner content{{/shortcodeName}}` being output in the HTML and picked up by the shortcode parser during the page generation process.
 
 ## Data Flow
 
@@ -1316,26 +1338,20 @@ Below are the breaking changes between v1 and earlier versions:
     hook: 'bootstrap',
     name: 'copyAssetsToPublic',
     description:
-      'Copies /assets/ to the distDir folder defined in the elder.config.js. This function helps support the live reload process.',
+      'Copies ./assets/ to the "distDir" defined in the elder.config.js. This function helps support the live reload process.',
     run: ({ settings }) => {
       // note that this function doesn't manipulate any props or return anything.
       // It is just executed on the 'bootstrap' hook which runs once when Elder.js is starting.
 
       // copy assets folder to public destination
-      glob.sync(path.join(settings.rootDir, '/assets/**/*')).forEach((file) => {
+      glob.sync(path.resolve(settings.rootDir, './assets/**/*')).forEach((file) => {
         const parsed = path.parse(file);
         // Only write the file/folder structure if it has an extension
         if (parsed.ext && parsed.ext.length > 0) {
-          const relativeToAssetsArray = parsed.dir.split('assets');
-          relativeToAssetsArray.shift();
-
-          const relativeToAssetsFolder = `.${relativeToAssetsArray.join()}/`;
-          const p = path.parse(path.resolve(settings.distDir, relativeToAssetsFolder));
-          fs.ensureDirSync(p.dir);
-          fs.outputFileSync(
-            path.resolve(settings.distDir, `${relativeToAssetsFolder}${parsed.base}`),
-            fs.readFileSync(file),
-          );
+          const relativeToAssetsFolder = path.relative(path.join(settings.rootDir, './assets'), file);
+          const outputPath = path.resolve(settings.distDir, relativeToAssetsFolder);
+          fs.ensureDirSync(path.parse(outputPath).dir);
+          fs.outputFileSync(outputPath, fs.readFileSync(file));
         }
       });
     },
