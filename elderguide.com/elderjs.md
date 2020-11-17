@@ -363,7 +363,7 @@ Here is the function signature for a `route.js` permalink function:
 permalink: ({ request, settings, helpers }): String => {
   // NOTE: permalink must be sync. Async is not supported.
 
-  // request: this is the object received from the all() function. Generally, we recommend passing a 'slug' parameter but you can use any naming you want
+  // request: this is the object received from the all() function. Generally, we recommend passing a 'slug' parameter but you can use any naming you want.
   // settings: this describes the Elder.js bootstrap settings.
   // helpers: Elder.js helpers and user helpers from the ./src/helpers/index.js` file. 
   // NOTE: You should avoid using helpers here as helpers.permalinks default helper (see below) doesn't support it.
