@@ -360,11 +360,13 @@ all: async ({ settings, query, data, helpers }): Array<Object> => {
 Here is the function signature for a `route.js` permalink function:
 
 ```javascript
-permalink: ({ request, settings }): String => {
+permalink: ({ request, settings, helpers }): String => {
   // NOTE: permalink must be sync. Async is not supported.
 
   // request: this is the object received from the all() function. Generally, we recommend passing a 'slug' parameter but you can use any naming you want.
   // settings: this describes the Elder.js bootstrap settings.
+  // helpers: Elder.js helpers and user helpers from the ./src/helpers/index.js` file. 
+  // NOTE: You should avoid using helpers here as helpers.permalinks default helper (see below) doesn't support it.
   return String;
 };
 ```
@@ -627,7 +629,7 @@ Elder.js give you fine grained control over what parts of your site are "hydrate
 
 If you aren't sure what should be hydrated and what shouldn't, the general rule of thumb is that if a component needs to be interactive on the client, you need to hydrate it.
 
-To hydrate a component, simply use the following markup in either your **Svelte Template** or **Svelte Layout** files. (eg: `./src/routes/blog/Blog.svlete` or `./src/layouts/Layout.svelte`)
+To hydrate a component, simply use the following markup in either your **Svelte Template** or **Svelte Layout** files. (eg: `./src/routes/blog/Blog.svelte` or `./src/layouts/Layout.svelte`)
 
 ```
 // within any Svelte template
