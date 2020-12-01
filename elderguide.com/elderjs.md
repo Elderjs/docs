@@ -15,15 +15,7 @@
 - **0KB JS**: Defaults to 0KB of JS if your page doesn't need JS.
 - **Partial Hydration**: Unlike most frameworks, Elder.js lets you hydrate just the parts of the client that need to be interactive allowing you to dramatically reduce your payloads while still having full control over component lazy-loading, preloading, and eager-loading.
 
-**Context**
-
-Elder.js is the result of our team's work to build this site ([ElderGuide.com](https://elderguide.com)) and was purpose built to solve the unique challenges of building flagship SEO sites with 10-100k+ pages.
-
-Elder Guide Co-Founder [Nick Reese](https://nicholasreese.com) has built or managed 5 major SEO properties over the past 14 years. After leading the transition of several complex sites to static site generators, he loved the benefits of the JAM stack, but wished there was a better solution for complex, data intensive, projects. Elder.js is his vision for how static site generators can become viable for sites of all sizes regardless of the number of pages or how complex the data being presented is.
-
-We hope you find this project useful whether you're building a small personal blog or a flagship SEO site that impacts millions of users.
-
-## Project Status: Stable
+**Project Status: Stable**
 
 Elder.js is stable and production ready.
 
@@ -37,7 +29,15 @@ This is a lot of words to say we’re not looking to ship a bunch of breaking ch
 
 As of September 2020, the ElderGuide.com team expects to maintain this project at least until 2023-2024. For a clearer vision of what we mean by this and what to expect from the maintainers as far as what is considered "in scope" and what isn't, [please see this comment](https://github.com/Elderjs/elderjs/issues/31#issuecomment-690694857).
 
-## Getting Started:
+**Context**
+
+Elder.js is the result of our team's work to build this site ([ElderGuide.com](https://elderguide.com)) and was purpose built to solve the unique challenges of building flagship SEO sites with 10-100k+ pages.
+
+Elder Guide Co-Founder [Nick Reese](https://nicholasreese.com) has built or managed 5 major SEO properties over the past 14 years. After leading the transition of several complex sites to static site generators, he loved the benefits of the JAM stack, but wished there was a better solution for complex, data intensive, projects. Elder.js is his vision for how static site generators can become viable for sites of all sizes regardless of the number of pages or how complex the data being presented is.
+
+We hope you find this project useful whether you're building a small personal blog or a flagship SEO site that impacts millions of users.
+
+## Getting Started
 
 The quickest way to get started is to get started with the [Elder.js template](https://github.com/Elderjs/template) using [degit](https://github.com/Rich-Harris/degit):
 
@@ -89,13 +89,13 @@ Let the build finish.
 npx sirv-cli public
 ```
 
-## Elder.js Intro Video:
+### Elder.js Intro Video:
 
 The talk below was given at Svelte Summit 2020 and is a great intro to the concepts behind Elder.js.
 
 <iframe width="730" height="411" src="https://www.youtube-nocookie.com/embed/R9oPCfd1FB8?modestbranding=1&showinfo=0&rel=0&cc_load_policy=1" class="youtube" frameborder="0" allowfullscreen></iframe>
 
-## Why We Built Elder.js
+### Why We Built Elder.js
 
 When we set out to build elderguide.com we tested 6 different static site generators (Gatsby, Next.js, Nuxt.js, 11ty, Sapper and Hydrogen.js) and ultimately realized there wasn’t a solution that ticked all of our boxes.
 
@@ -360,11 +360,13 @@ all: async ({ settings, query, data, helpers }): Array<Object> => {
 Here is the function signature for a `route.js` permalink function:
 
 ```javascript
-permalink: ({ request, settings }): String => {
+permalink: ({ request, settings, helpers }): String => {
   // NOTE: permalink must be sync. Async is not supported.
 
   // request: this is the object received from the all() function. Generally, we recommend passing a 'slug' parameter but you can use any naming you want.
   // settings: this describes the Elder.js bootstrap settings.
+  // helpers: Elder.js helpers and user helpers from the ./src/helpers/index.js` file.
+  // NOTE: You should avoid using helpers here as helpers.permalinks default helper (see below) doesn't support it.
   return String;
 };
 ```
@@ -391,7 +393,7 @@ data: async ({
 };
 ```
 
-## Hooks: How to Customize Elder.js
+## Hooks
 
 Elder.js hooks are designed to be modular, sharable, and easily bundled in to [Elder.js plugins](https://github.com/Elderjs/plugins) for common use cases... while still giving developers of all skill levels an easy way to customize core page generation logic to their own needs.
 
@@ -431,6 +433,8 @@ This structure was implemented to keep mutation and side effects predictable.
 ### Hook Lifecycle
 
 <img src="https://elderguide.com/images/elderjs-hooks-v100.png" alt="Elder.js hook Lifecycle" style="max-width:100%; margin:1rem 0;" />
+
+### Hook List
 
 {{output_hook_list}}
 
@@ -609,7 +613,7 @@ const plugin: PluginOptions = {
 
 This plugin registers function executions on two hooks, the `dataComplete` hook and the `requestComplete` hook. In each, it uploads the data or html to the s3 bucket specified in the user's `elder.config.js`.
 
-## Svelte Templates, Svelte Layouts, and Svelte Components
+## Svelte
 
 Within Elder.js, there is a subtle distinction between how different Svelte files are compiled.
 
@@ -683,7 +687,8 @@ On the homepage of elderguide.com, we use the following code to hydrate the auto
 
 ```svelte
 // within elderguide.com’s Home.svelte
- <HomeAutoComplete hydrate-client={{ nh_count: data.nh_count }} />
+<HomeAutoComplete hydrate-client={{ nh_count: data.nh_count }} />
+
 ```
 
 You can do the same for a component without any props by using:
@@ -702,7 +707,7 @@ If you are curious, the files to look at are: `partialHydration.ts` and `svelteC
 
 The important thing to note is that still use Svelte variables in `hydrate-client` as long as they can be processed by `JSON.stringify`.
 
-## Shortcodes: Customizing and Future Proofing Your Content
+## Shortcodes
 
 Whether your content lives in markdown files, on Prismic, Contentful, WordPress, Strapi, your own CMS, at some point you or someone who is managing the content will want to add some 'functionality' to this otherwise static content.
 
@@ -899,11 +904,35 @@ export let helpers;
 
 This results in `{{shortcodeName background="blue"}}Inner content{{/shortcodeName}}` being output in the HTML and picked up by the shortcode parser during the page generation process.
 
-## Data Flow
+## CSS
+
+Elder.js has 4 different modes of handling CSS each of which can be set in your `elder.config.js` by settings the desired value on the `css` key.
+
+1. `file`: (default) All of the CSS from Svelte components and imported into Svelte components is written to a file and included in the head.
+2. `lazy`: All of the CSS from Svelte components and imported into Svelte components is written to a file and included in the head but is lazily loaded. (Designed for use with the Elder.js critical path plugin.)
+3. `inline` One where all CSS a component depends on will be added to the head. This is how Elder.js started so this is the default. This is a great option for serverless rendering.
+4. `none` no css handling.
+
+Source maps are included where available when `process.env.NODE_ENV !== "PRODUCTION"`.
+
+### Including External CSS
+
+The best practice for including external CSS is to simply import it:
+
+```javascript
+// any svelte file.
+import "./path/to/css/file.css";
+```
+
+If the CSS isn't appearing for some reason, try rerunning Rollup.
+
+## Elder.js In Detail
+
+### Data Flow
 
 Here is a detailed overview of how data flows through an Elder.js application from 'bootstrap' all the way to a generated HTML page.
 
-### 1. Everything starts in a site's route.js files
+#### 1. Everything starts in a site's route.js files
 
 Below is the example `route.js` file we'll be following the flow of.
 
@@ -927,7 +956,7 @@ module.exports = {
 }
 ```
 
-### 2. Elder.js Bootstrap Itself
+#### 2. Elder.js Bootstrap Itself
 
 During this process, Elder.js validates all of the routes, plugins, hooks. It then runs the 'bootstrap' hook.
 
@@ -935,11 +964,11 @@ Finally, the `all` function for each route is executed.
 
 Together, the aggregate result of each route's `all` function is referred to as `allRequests`.
 
-### 3. The `allRequests` Hook is Run
+#### 3. The `allRequests` Hook is Run
 
 This allows users to modify the `allRequests` array. If you modify or add to this array of objects, make sure each result has a 'request.route' key.
 
-### 4. Full 'request' Objects are Built
+#### 4. Full 'request' Objects are Built
 
 Once Elder.js has a full list of requests, it then builds permalinks and full 'request' objects that will be consumed by hooks, `data` functions, Svelte templates, and Svelte layouts.
 
@@ -959,7 +988,7 @@ request = {
 
 It is important to note that all of the params of the 'request' objects returned by the `all` function will be present in the 'request' object even though our example only uses `slug`.
 
-### 5. Hooks are Executed Until the `data` function is Executed
+#### 5. Hooks are Executed Until the `data` function is Executed
 
 The data flows through all of the hooks until it reaches a route's `data` function.
 
@@ -978,7 +1007,7 @@ module.exports = async ({ query, settings, request, data }) => {
 };
 ```
 
-### 6. The 'data' hook is Executed
+#### 6. The 'data' hook is Executed
 
 The data hook is generally used by plugins to modify data for a route.
 
@@ -995,7 +1024,7 @@ return {
 
 You can debug this by setting `debug.hooks: true` in your `elder.config.js`.
 
-### 7. The data Object is passed to the Svelte template
+#### 7. The data Object is passed to the Svelte template
 
 In this example, `./src/routes/blog/Blog.svelte` may look like this:
 
@@ -1008,21 +1037,21 @@ In this example, `./src/routes/blog/Blog.svelte` may look like this:
 </script>
 ```
 
-### 8. The HTML returned by Blog.svelte is passed into Layout.svelte
+#### 8. The HTML returned by Blog.svelte is passed into Layout.svelte
 
 Svelte layouts receive the same props as the template file but also include a `routeHTML` prop which would be the html from `Blog.svelte` in this example.
 
-### 9. Page Generation Completes
+#### 9. Page Generation Completes
 
 All further hooks are run until the 'request' has been completed.
 
 This includes user hooks, system hooks, and plugin hooks.
 
-## Specifications and Config
+### Specifications and Config
 
 Below are details on common specifications and config requirements.
 
-### Config: `elder.config.js`
+#### Config: `elder.config.js`
 
 By default, Elder.js looks for an `elder.config.js` file in your project root and will import any settings there and merge them with the default.
 
@@ -1032,7 +1061,7 @@ Below is what the default configuration file looks like. This is automatically g
 module.exports = {{output_default_config}}
 ```
 
-### Elder.js Expected file structure
+#### Elder.js Expected file structure
 
 Elder.js expects a specific file structure outlined below. This is why we recommend you start with the Elder.js template.
 
@@ -1070,7 +1099,7 @@ Project Root
 | -- | -- files to be copied to your public folder.
 ```
 
-### Hook Specification
+#### Hook Specification
 
 Hooks are the core of how to make site level customizations. Below is the default spec for a hook.
 
@@ -1080,7 +1109,7 @@ module.exports = {{output_hook_schema}}
 
 ```
 
-### Plugin Specification
+#### Plugin Specification
 
 Plugins are a bundle of hooks with their own closure scope based on the object that is returned by the `init()` function. This means that all hooks and shortcodes receive the plugin definition returned by the `init()` function and are able to store properties in that scope throughout the hook lifecycle. Below is the default specification for a plugin.
 
@@ -1090,7 +1119,7 @@ module.exports = {{output_plugin_schema}}
 
 ```
 
-### Route Specification
+#### Route Specification
 
 Routes can be defined by plugins or by including a `./src/[routeName]/route.js` file.
 
@@ -1100,7 +1129,7 @@ module.exports = {{output_route_schema}}
 
 ```
 
-### Shortcode Specification
+#### Shortcode Specification
 
 Shortcodes are a great way to future proof your content. Below is the default shortcode specification. These should be defined in the array exported by your `./src/shortcodes.js`
 
@@ -1110,7 +1139,7 @@ module.exports = [{{output_shortcode_schema}}]
 
 ```
 
-### Requirements for `name` and `description` fields
+#### Requirements for `name` and `description` fields
 
 In various places such as on hooks, plugins, and stacks, you'll see that Elder.js requires `name` and `description` fields.
 
@@ -1122,7 +1151,7 @@ These fields are also used to generate the pretty printouts of how long each hoo
 
 As a team, we've found build times to be especially important when building 10k+ page sites as 100ms adds 16+ minutes to your build time. What gets measured gets managed... and we know faster deploys leads to deploying more often.
 
-### Stacks: Predictable String Concatenation
+#### Stacks: Predictable String Concatenation
 
 In a few places, you may see that Elder.js is using 'stacks.' These are just our internal way of processing strings that need to be concatenated.
 
@@ -1143,7 +1172,7 @@ In short, a stack is an array of objects that are concatenated together in order
 
 Hooks can add items to the stack, when the stack is processed, it is sorted in order of priority and then all strings are concatenated.
 
-## Automatic Behavior
+### Automatic Behavior
 
 Elder.js does quite a bit of automatic behavior much of which is based on using the standard filesystem.
 
@@ -1153,7 +1182,7 @@ Instead of burying this magic, things that happen automagically are logged to th
 - All hooks in your `./src/hooks.js` file, `./routes/[routeName]/route.js` files, and plugins are imported and validated.
 - All optional variables in your routes file will be set automatically if Elder.js detects that the files needed are present.
 
-## Default Helpers
+### Default Helpers
 
 By default, Elder.js adds a few items to the `helpers` object that is available in hooks, Svelte templates/layouts, and `data` functions.
 
@@ -1161,9 +1190,9 @@ By default, Elder.js adds a few items to the `helpers` object that is available 
 - `shortcode`: A more comfortable way to use shortcodes within Svelte files. Common usage within a .svelte file may look like : `{ @html helpers.shortcode({name: 'box', props: {class: "yellow"}, content: "content string here" }) }`. If you are using the default Elder.js shortcode brackets, this would output `{{box class='yellow'}}content string here{{/box}}` which would be parsed like any other shortcode.
 - `inlineSvelteComponent`: This helper is mainly useful when needing to add a Svelte component to your html via, hooks, plugins, or custom shortcodes. All of the options available when hydrating a component are available with this helper, it simply outputs the required hydration html so that Elder.js picks it up and hydrates the client. `helpers.inlineSvelteComponent({name: 'Foo', props: { anything: true }, options: { preload: true, eager: true }})`
 
-## Elder.js Exports:
+### Elder.js Exports:
 
-### `server`
+#### `server`
 
 Elder.js was built as a static site generator, but it offers a built-in server that is pretty snappy past the initial bootstrap phase.
 
@@ -1171,7 +1200,7 @@ This can be used to power server rendered (SSR) apps or used to preview the outp
 
 You can see how this functionality is utilized in the [`elderjs-template`](https://github.com/Elderjs/template/blob/master/src/server.js).
 
-### `build`
+#### `build`
 
 The `build` function exported from Elder.js uses Node's cluster module to use multiple processes to build your site.
 
@@ -1181,13 +1210,13 @@ The main process runs through bootstrap and collects `allRequests`. It then spin
 
 There are two notable config options: `numberOfWorkers` and `shuffleRequests` which you can read about in the config section.
 
-### `getRollupConfig`
+#### `getRollupConfig`
 
 A function that generates all of the Elder.js required `rollup` output.
 
 See the clonable template for the minimum viable rollup config.
 
-#### Replacements
+##### Replacements
 
 If you need to add values to be replaced during bundling, you can do so like this:
 
@@ -1205,11 +1234,11 @@ module.exports = [
 ];
 ```
 
-### `getElderConfig`
+#### `getElderConfig`
 
 A helper function that returns the user's `elder.config.js` with defaults added in where they aren't defined.
 
-## Using typescript/postcss/scss or other preprocessors
+### Using typescript/postcss/scss or other Preprocessors
 
 Elder.js uses the [svelte-preprocess package](https://github.com/sveltejs/svelte-preprocess) to enable the use of typescript, scss, postcss or any other preprocessor that the svelte-preprocess package supports. To enable a preprocessor, you need to first install the dependecies for it, for example, to enable typescript and sass, you need to install the following dependecies
 
@@ -1237,7 +1266,7 @@ module.exports = {
 
 Go through the [svelte-preprocess docs](https://github.com/sveltejs/svelte-preprocess/blob/master/docs/preprocessing.md) to learn about all the supported features.
 
-### Extra setup for typescript
+#### Extra setup for typescript
 
 You should be able to use typescript in svelte files by following the instructions above but for customizing your typescript config, we recommend you rename the sample.tsconfig.json in the default template to tsconfig.json and use that as your typescript config. You can also extend [svelte/tsconfig]
 (https://www.npmjs.com/package/@tsconfig/svelte) which is the recommended config by the Svelte team. To run typescript checks as part of your linting process or CI/CD step, install the [svelte-check package](https://www.npmjs.com/package/svelte-check) and add a script to your package.json to run this tool.
@@ -1266,9 +1295,15 @@ hooks: {
 },
 ```
 
+### Caching Client Assets
+
+By default Elder.js emits hashed files for assets under its control into the `./${distDir}/_elderjs/` folder.
+
+This allows for aggressive caching of client side assets such as `cache-control public, max-age=31536000, immutable`.
+
 ### How can I copy files to public?
 
-The [template project has a hook](https://github.com/Elderjs/template/blob/master/src/hooks.js) that copies your `./assets/` folder to the 'distDir' location defined in your `elder.config.js`.
+The [template project has a hook](https://github.com/Elderjs/template/blob/master/src/hooks.js) that copies your `./assets/` folder to the `distDir` location defined in your `elder.config.js`.
 
 ### Why can't I use Svelte templates for data fetching/manipulation?
 
