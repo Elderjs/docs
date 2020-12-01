@@ -393,6 +393,8 @@ data: async ({
 };
 ```
 
+<span id="hooks-how-to-customize-elderjs"></span>
+
 ## Hooks
 
 Elder.js hooks are designed to be modular, sharable, and easily bundled in to [Elder.js plugins](https://github.com/Elderjs/plugins) for common use cases... while still giving developers of all skill levels an easy way to customize core page generation logic to their own needs.
