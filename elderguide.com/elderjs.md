@@ -631,7 +631,7 @@ Elder.js give you fine grained control over what parts of your site are "hydrate
 
 If you aren't sure what should be hydrated and what shouldn't, the general rule of thumb is that if a component needs to be interactive on the client, you need to hydrate it.
 
-To hydrate a component, simply use the following markup in either your **Svelte Template** or **Svelte Layout** files. (eg: `./src/routes/blog/Blog.svlete` or `./src/layouts/Layout.svelte`)
+To hydrate a component, simply use the following markup in either your **Svelte Template** or **Svelte Layout** files. (eg: `./src/routes/blog/Blog.svelte` or `./src/layouts/Layout.svelte`)
 
 ```
 // within any Svelte template
