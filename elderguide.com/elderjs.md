@@ -464,7 +464,7 @@ module.exports = [
     name: 'addExternalData',
     description: 'Adds arbitrary external data to the data object available in all hooks and routes.',
     run: async ({ settings, data }) => {
-      const externalData = await fetch('https://yourapi.here',).then((res) => res.json());
+      const externalData = await fetch('https://yourapi.here').then((res) => res.json());
       return {
         data: {
           ...data,
