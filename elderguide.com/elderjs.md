@@ -453,6 +453,31 @@ This hook is executed after Elder.js has bootstrapped itself and lets users run 
 
 Internally, Elder.js uses this hook to automatically any user defined helpers `./src/helpers/index.js` to the `helpers` prop that is available on other hooks, in Svelte templates, and `data` functions.
 
+#### Fetching External Data
+
+```javascript
+// ./src/hooks.js
+const fetch = require('node-fetch');
+module.exports = [
+  {
+    hook: 'bootstrap',
+    name: 'addExternalData',
+    description: 'Adds arbitrary external data to the data object available in all hooks and routes.',
+    run: async ({ settings, data }) => {
+      const externalData = await fetch('https://yourapi.here',).then((res) => res.json());
+      return {
+        data: {
+          ...data,
+          externalData, // this data is now available in the `all` and `data` functions of your `/routes/routeName/route.js`.
+        },
+      };
+    },
+  },
+};
+```
+
+#### Adding DB to the `query` Object
+
 Here is what a simple hook defined in your `./src/hook.js` file might look like if you wanted to add a database connection to the `query` object which is available every time a hook is called:
 
 ```javascript
