@@ -322,9 +322,9 @@ module.exports = {
 
 **Data Used in Multiple Routes**
 
-If you have data that is used in multiple routes, you can share that data between routes by populating the `data` object on the `boostrap` hook documented later in this guide.
+If you have data that is used in multiple routes, you can share that data between routes by populating the `data` object on the `bootstrap` hook documented later in this guide.
 
-Assuming you have populated the `data.cities` with an array of cities on the `boostrap` hook, you could access it like so:
+Assuming you have populated the `data.cities` with an array of cities on the `bootstrap` hook, you could access it like so:
 
 ```javascript
 // ./src/routes/city/route.js
@@ -340,7 +340,7 @@ module.exports = {
 };
 ```
 
-Data defined in `boostrap` is available on all routes.
+Data defined in `bootstrap` is available on all routes.
 
 ### all() Function Spec
 
