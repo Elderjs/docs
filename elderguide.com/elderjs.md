@@ -734,6 +734,14 @@ If you are curious, the files to look at are: `partialHydration.ts` and `svelteC
 
 The important thing to note is that still use Svelte variables in `hydrate-client` as long as they can be processed by `JSON.stringify`.
 
+### Slots
+
+A common pitfall is to try and use slots while hydrating a component. This won't work because Svelte's mount code doesn't support slots during mounting.
+
+To get around this, create a parent component without slots to hydrate, then import the component that uses slots within that file. 
+
+Remember, partial hydration is just a wrapper around Svelte's mount code. 
+
 ## Shortcodes
 
 Whether your content lives in markdown files, on Prismic, Contentful, WordPress, Strapi, your own CMS, at some point you or someone who is managing the content will want to add some 'functionality' to this otherwise static content.
