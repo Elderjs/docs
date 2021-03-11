@@ -1074,7 +1074,7 @@ In this example, `./src/routes/blog/Blog.svelte` may look like this:
 
 #### 8. The HTML returned by Blog.svelte is passed into Layout.svelte
 
-Svelte layouts receive the same props as the template file but also include a `routeHTML` prop which would be the html from `Blog.svelte` in this example.
+Svelte layouts receive the same props as the template file but also include a `templateHtml` prop which would be the html from `Blog.svelte` in this example.
 
 #### 9. Page Generation Completes
 
