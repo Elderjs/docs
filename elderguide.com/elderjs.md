@@ -518,7 +518,7 @@ If you need to limit a function to only run on a specific route, you can do so b
 
 **SYSTEM HOOKS:**
 
-Under the hood, all of the hooks Elder.js runs are defined in the [@elderjs/elderjs `./src/hooks.ts`](https://github.com/Elderjs/elderjs/blob/master/src/hooks.ts).
+Under the hood, all of the hooks Elder.js runs are defined in the [@elderjs/elderjs `./src/hooks/index.ts`](https://github.com/Elderjs/elderjs/blob/master/src/hooks/index.ts).
 
 They can be disabled by adding the hook name to the `hooks.disable` array in your `elder.config.js`.
 
