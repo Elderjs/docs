@@ -697,6 +697,8 @@ The end result is generally smaller bundle/page sizes and less work for the main
 <Component hydrate-client={{ ssrProp, clientProp }} />
 ```
 
+The environment variable 'process.env.componentType' will return `browser` or `server` depending on where the component is being rendered. `process.env.componentType === 'server'` is the correct way to check if a component is rendering on the server.
+
 ### Hydration Options:
 
 To give you fine grained control over how a Svelte component behaves when it is mounted, the following `hydrate-options` can be defined:
