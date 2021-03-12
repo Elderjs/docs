@@ -399,7 +399,7 @@ data: async ({
 
 Elder.js hooks are designed to be modular, sharable, and easily bundled in to [Elder.js plugins](https://github.com/Elderjs/plugins) for common use cases... while still giving developers of all skill levels an easy way to customize core page generation logic to their own needs.
 
-For a full overview of the hooks available, you can reference the [hookInterface.ts](https://github.com/Elderjs/elderjs/blob/master/src/hookInterface/hookInterface.ts) or the hooks list below.
+For a full overview of the hooks available, you can reference the [hookInterface.ts](https://github.com/Elderjs/elderjs/blob/master/src/hooks/hookInterface.ts) or the hooks list below.
 
 In short, there is a hook at every major step of the page generation process from system bootstrap (the `bootstrap` hook) all the way to writing html to your computer (on the `requestComplete` hook).
 
