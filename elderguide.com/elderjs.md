@@ -324,9 +324,9 @@ module.exports = {
 
 **Data Used in Multiple Routes**
 
-If you have data that is used in multiple routes, you can share that data between routes by populating the `data` object on the `boostrap` hook documented later in this guide.
+If you have data that is used in multiple routes, you can share that data between routes by populating the `data` object on the `bootstrap` hook documented later in this guide.
 
-Assuming you have populated the `data.cities` with an array of cities on the `boostrap` hook, you could access it like so:
+Assuming you have populated the `data.cities` with an array of cities on the `bootstrap` hook, you could access it like so:
 
 ```javascript
 // ./src/routes/city/route.js
@@ -342,7 +342,7 @@ module.exports = {
 };
 ```
 
-Data defined in `boostrap` is available on all routes.
+Data defined in `bootstrap` is available on all routes.
 
 ### all() Function Spec
 
@@ -405,7 +405,7 @@ data: async ({
 
 Elder.js hooks are designed to be modular, sharable, and easily bundled in to [Elder.js plugins](https://github.com/Elderjs/plugins) for common use cases... while still giving developers of all skill levels an easy way to customize core page generation logic to their own needs.
 
-For a full overview of the hooks available, you can reference the [hookInterface.ts](https://github.com/Elderjs/elderjs/blob/master/src/hookInterface/hookInterface.ts) or the hooks list below.
+For a full overview of the hooks available, you can reference the [hookInterface.ts](https://github.com/Elderjs/elderjs/blob/master/src/hooks/hookInterface.ts) or the hooks list below.
 
 In short, there is a hook at every major step of the page generation process from system bootstrap (the `bootstrap` hook) all the way to writing html to your computer (on the `requestComplete` hook).
 
@@ -526,7 +526,7 @@ If you need to limit a function to only run on a specific route, you can do so b
 
 **SYSTEM HOOKS:**
 
-Under the hood, all of the hooks Elder.js runs are defined in the [@elderjs/elderjs `./src/hooks.ts`](https://github.com/Elderjs/elderjs/blob/master/src/hooks.ts).
+Under the hood, all of the hooks Elder.js runs are defined in the [@elderjs/elderjs `./src/hooks/index.ts`](https://github.com/Elderjs/elderjs/blob/master/src/hooks/index.ts).
 
 They can be disabled by adding the hook name to the `hooks.disable` array in your `elder.config.js`.
 
@@ -705,6 +705,8 @@ The end result is generally smaller bundle/page sizes and less work for the main
 <Component hydrate-client={{ ssrProp, clientProp }} />
 ```
 
+The environment variable 'process.env.componentType' will return `browser` or `server` depending on where the component is being rendered. `process.env.componentType === 'server'` is the correct way to check if a component is rendering on the server.
+
 ### Hydration Options:
 
 To give you fine grained control over how a Svelte component behaves when it is mounted, the following `hydrate-options` can be defined:
@@ -741,6 +743,14 @@ Later when we go to render these templates, we look for the removed components, 
 If you are curious, the files to look at are: `partialHydration.ts` and `svelteComponent.ts.`
 
 The important thing to note is that still use Svelte variables in `hydrate-client` as long as they can be processed by `JSON.stringify`.
+
+### Slots
+
+A common pitfall is to try and use slots while hydrating a component. This won't work because Svelte's mount code doesn't support slots during mounting.
+
+To get around this, create a parent component without slots to hydrate, then import the component that uses slots within that file. 
+
+Remember, partial hydration is just a wrapper around Svelte's mount code. 
 
 ## Shortcodes
 
@@ -1071,7 +1081,7 @@ In this example, `./src/routes/blog/Blog.svelte` may look like this:
 
 #### 8. The HTML returned by Blog.svelte is passed into Layout.svelte
 
-Svelte layouts receive the same props as the template file but also include a `routeHTML` prop which would be the html from `Blog.svelte` in this example.
+Svelte layouts receive the same props as the template file but also include a `templateHtml` prop which would be the html from `Blog.svelte` in this example.
 
 #### 9. Page Generation Completes
 
