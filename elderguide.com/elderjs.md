@@ -1318,8 +1318,7 @@ Go through the [svelte-preprocess docs](https://github.com/sveltejs/svelte-prepr
 
 #### Extra setup for typescript
 
-You should be able to use typescript in svelte files by following the instructions above but for customizing your typescript config, we recommend you rename the sample.tsconfig.json in the default template to tsconfig.json and use that as your typescript config. You can also extend [svelte/tsconfig]
-(https://www.npmjs.com/package/@tsconfig/svelte) which is the recommended config by the Svelte team. To run typescript checks as part of your linting process or CI/CD step, install the [svelte-check package](https://www.npmjs.com/package/svelte-check) and add a script to your package.json to run this tool.
+You should be able to use typescript in svelte files by following the instructions above but for customizing your typescript config, we recommend you rename the sample.tsconfig.json in the default template to tsconfig.json and use that as your typescript config. You can also extend [svelte/tsconfig](https://www.npmjs.com/package/@tsconfig/svelte) which is the recommended config by the Svelte team. To run typescript checks as part of your linting process or CI/CD step, install the [svelte-check package](https://www.npmjs.com/package/svelte-check) and add a script to your package.json to run this tool.
 
 ```
 "type-check": "svelte-check"
