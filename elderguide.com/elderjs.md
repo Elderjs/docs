@@ -37,6 +37,14 @@ Elder Guide Co-Founder [Nick Reese](https://nicholasreese.com) has built or mana
 
 We hope you find this project useful whether you're building a small personal blog or a flagship SEO site that impacts millions of users.
 
+**Comparison to SvelteKit**
+
+How Elder compares to SvelteKit is a very common question. The key distinction is that Elder.js is designed for static sites with Partial Hydration, and offers tools to help make building large static sites easier.
+
+For instance, when it comes to building non-trivial static sites, there is a lot of data massaging that needs to happen and be in sync across the entire project. A good example is when reading from a headless CMS or generating a sitemap. With Elder.js, you can massage this data once and add it where you need to via a hook and it will be available on all pages. This is what enables Elder's extreme build speed, whereas SvelteKit has no data pipeline opinion.
+
+SvelteKit does not ([currently](https://github.com/sveltejs/kit/issues/1390)) support Partial Hydration - you have to opt in/out of JS on a per-page basis, instead of per-component.
+
 ## Getting Started
 
 The quickest way to get started is to get started with the [Elder.js template](https://github.com/Elderjs/template) using [degit](https://github.com/Rich-Harris/degit):
