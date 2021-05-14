@@ -59,7 +59,7 @@ Navigate to <a href="localhost:3000" rel="nofollow">http://localhost:3000</a>. Y
 
 This spawns a development server, so simply edit a file in `src`, save it, and reload the page to see your changes.
 
-You can also see a live demo of this template: [https://elderjs.netlify.app/](https://elderjs.netlify.app/)
+You can also see a live demo of this template: [https://elderjs.pages.dev/](https://elderjs.pages.dev/)
 
 ### To Build HTML for Production:
 
