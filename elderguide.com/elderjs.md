@@ -61,7 +61,7 @@ This spawns a development server, so simply edit a file in `src`, save it, and r
 
 You can also see a live demo of this template: [https://elderjs.netlify.app/](https://elderjs.netlify.app/)
 
-### To Build/Serve HTML:
+### To Build HTML for Production:
 
 ```bash
 npm run build
@@ -69,8 +69,16 @@ npm run build
 
 Let the build finish.
 
+If you wish to preview you can use:
+
 ```bash
 npx sirv-cli public
+```
+
+### To Run in SSR Mode for Production:
+
+```bash
+npm run serve
 ```
 
 ### Elder.js Intro Video:
@@ -136,7 +144,7 @@ module.exports = {
       blogpost: `This is the blogpost for the slug: ${request.slug}`.
     }
   },
-  dynamic: false, // default
+  dynamic: false, // default.
 };
 ```
 
@@ -748,9 +756,9 @@ The important thing to note is that still use Svelte variables in `hydrate-clien
 
 A common pitfall is to try and use slots while hydrating a component. This won't work because Svelte's mount code doesn't support slots during mounting.
 
-To get around this, create a parent component without slots to hydrate, then import the component that uses slots within that file. 
+To get around this, create a parent component without slots to hydrate, then import the component that uses slots within that file.
 
-Remember, partial hydration is just a wrapper around Svelte's mount code. 
+Remember, partial hydration is just a wrapper around Svelte's mount code.
 
 ## Shortcodes
 
