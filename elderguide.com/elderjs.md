@@ -37,14 +37,6 @@ Elder Guide Co-Founder [Nick Reese](https://nicholasreese.com) has built or mana
 
 We hope you find this project useful whether you're building a small personal blog or a flagship SEO site that impacts millions of users.
 
-**Comparison to SvelteKit**
-
-How Elder compares to SvelteKit is a very common question. The key distinction is that Elder.js is designed for static sites with Partial Hydration, and offers tools to help make building large static sites easier.
-
-For instance, when it comes to building non-trivial static sites, there is a lot of data massaging that needs to happen and be in sync across the entire project. A good example is when reading from a headless CMS or generating a sitemap. With Elder.js, you can massage this data once and add it where you need to via a hook and it will be available on all pages. This is what enables Elder's extreme build speed, whereas SvelteKit has no data pipeline opinion.
-
-SvelteKit does not ([currently](https://github.com/sveltejs/kit/issues/1390)) support Partial Hydration - you have to opt in/out of JS on a per-page basis, instead of per-component.
-
 ## Getting Started
 
 The quickest way to get started is to get started with the [Elder.js template](https://github.com/Elderjs/template) using [degit](https://github.com/Rich-Harris/degit):
@@ -1372,6 +1364,34 @@ Initially, when designing Elder.js, we experimented with this approach but found
 
 Note: If you really want to do data fetching and manipulation in your templates, nothing is stopping you.
 
+### Elder.js Compared to SvelteKit
+
+How Elder compares to SvelteKit is a very common question. The key distinction is that Elder.js is designed with Partial Hydration in mind and offers tools to help make building large static sites easier.
+
+1. When it comes to building non-trivial static sites, there is a lot of data massaging that needs to happen and be in sync across the entire project. A good example is when reading from a headless CMS or generating a sitemap. With Elder.js, you can massage this data once and add it where you need to via a hook and it will be available on all pages. This is what enables Elder's extreme build speed, whereas SvelteKit has no data pipeline opinion.
+2. Elder.js has `shortcodes` which allow you to future proof your content.
+3. Elder.js uses `hooks` allowing your team to encapsulate much of a site's complexity in one place. These hooks also empower a growing ecosystem of plugins.
+4. Complete control over routing and url structure. SvelteKit uses file based routing which has it's benefits and limitations.
+
+In short, Elder.js is purpose built to run flagship SEO sites with 10-100k pages.
+
+SvelteKit is not out of beta but [currently does not](https://github.com/sveltejs/kit/issues/1390) support Partial Hydration - you have to opt in/out of JS on a per-page basis, instead of per-component.
+
+SvelteKit uses vite and has a bit of a higher quality developer experience.
+
+### Adding Database Access
+
+If your project is going to be querying its data from a database, we recommend using the bootstrap hook and adding a connection to your database on the “query” property. [See this hook example above](https://elderguide.com/tech/elderjs/#hook-example-1-bootstrap).
+
+### Customizing the HTML 'shell'
+
+In certain cases, you may want to customize the shell that Elder.js writes the `templateHtml` and `layoutHtml` to.
+
+Often a quick regex on the `html` hook is enough, but if you'd like complete control, you can overwrite how Elder.js compiles the html by:
+
+1. Add `elderCompileHtml` to the `hooks.disable` array in your `elder.config.js`.
+2. Register a new function on the `compileHtml` hook and implement your desired functionality. (Look for `elderCompileHtml` in @elderjs/elderjs's `hooks.ts` file.)
+
 ### How Does Elder.js Differ From Sapper?
 
 Sapper is a full stack Svelte framework that does server side rendering and supports static exporting of your site.
@@ -1391,19 +1411,6 @@ Elder.js solves these roadblocks.
 1. Build times on our ~20k page site are routinely less than 10 minutes on a modest VM. In our analysis, over 55% of our build time is spent waiting on the database server so you may see much faster builds. :)
 2. You can setup the routes however you need. The only requirement is that you don’t have two routes with the same url. :) (We’ll tell you if it happens)
 3. Every route defined has a single `data` function where you can do your database queries, read markdown files, and do whatever magic you need to prepare your data for display.
-
-### Adding Database Access
-
-If your project is going to be querying its data from a database, we recommend using the bootstrap hook and adding a connection to your database on the “query” property. [See this hook example above](https://elderguide.com/tech/elderjs/#hook-example-1-bootstrap).
-
-### Customizing the HTML 'shell'
-
-In certain cases, you may want to customize the shell that Elder.js writes the `templateHtml` and `layoutHtml` to.
-
-Often a quick regex on the `html` hook is enough, but if you'd like complete control, you can overwrite how Elder.js compiles the html by:
-
-1. Add `elderCompileHtml` to the `hooks.disable` array in your `elder.config.js`.
-2. Register a new function on the `compileHtml` hook and implement your desired functionality. (Look for `elderCompileHtml` in @elderjs/elderjs's `hooks.ts` file.)
 
 ### Upgrading to v1.0.0:
 
