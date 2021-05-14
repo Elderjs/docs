@@ -11,7 +11,7 @@
 - **Svelte Everywhere:** Use Svelte for your SSR templates and with partial hydration on the client for tiny html/bundle sizes.
 - **Straightforward Data Flow:** By simply associating a `data` function in your `route.js`, you have complete control over how you fetch, prepare, and manipulate data before sending it to your Svelte template. Anything you can do in Node.js, you can do to fetch your data. Multiple data sources, no problem.
 - **Community Plugins:** Easily extend what your Elder.js site can do by adding [prebuilt plugins](https://github.com/Elderjs/plugins) to your site.
-- **Shortcodes:** Future proof your content, whether it lives in a CMS or in static files using smart placeholders.
+- **Shortcodes:** Future proof your content, whether it lives in a CMS or in static files using smart placeholders. These shortcodes can be async!
 - **0KB JS**: Defaults to 0KB of JS if your page doesn't need JS.
 - **Partial Hydration**: Unlike most frameworks, Elder.js lets you hydrate just the parts of the client that need to be interactive allowing you to dramatically reduce your payloads while still having full control over component lazy-loading, preloading, and eager-loading.
 
@@ -57,25 +57,9 @@ npm start
 
 Navigate to <a href="localhost:3000" rel="nofollow">http://localhost:3000</a>. You should see your app running.
 
+This spawns a development server, so simply edit a file in `src`, save it, and reload the page to see your changes.
+
 You can also see a live demo of this template: [https://elderjs.netlify.app/](https://elderjs.netlify.app/)
-
-### Developing using the Template:
-
-For development, we recommend running two separate terminals. One for the server and the other for rollup.
-
-**Terminal 1: Server**
-
-```bash
-npm run dev:server # `npm start` above starts a server, but doesn't rebuild your Svelte components on change.
-```
-
-**Terminal 2: Rollup**
-
-```bash
-npm run dev:rollup # This rebuilds your Svelte components on change.
-```
-
-Once you have these two terminals open, edit a component file in `src`, save it, and reload the page to see your changes.
 
 ### To Build/Serve HTML:
 
@@ -123,12 +107,12 @@ In Elder.js a **route** is made up of 2 files that live in your route folder: `.
 
 They are:
 
-1. A `route.js` file. This is where you define route details such as the route’s `permalink` function, `all` function and `data` function.
+1. A `route.js` file. This is where you define route details such as the route’s `permalink` definition, `all` function and `data` function.
 2. A Svelte component to be used as a template matches the `${routeName}`; eg: `./src/routes/blog/Blog.svelte` (from here on out we refer to these specific Svelte components as "Svelte Templates")
 
 ### Route.js
 
-`route.js` files consist of a `permalink` function, an `all` function, and a `data` function.
+`route.js` files consist of a `permalink` definition, an `all` function, and a `data` function.
 
 Elder.js uses "explicit routing" instead of the more common "parameter based" routing found in most frameworks like `express`.
 
@@ -140,7 +124,7 @@ Let's look at an example of how you'd setup a route like `/blog/:slug/` where th
 // ./src/routes/blog/route.js
 module.exports = {
   template: 'Blog.svelte',
-  permalink: ({ request }) => `/blog/${request.slug}/`, // this is the same as /blog/:slug/ in 'parameter based' routing.
+  permalink: '/blog/:slug/'
   all: async () => {
     // The all function returns an array of all possible "request" objects for a route.
     // Here we are explicitly defining every possible variation of this route.
@@ -148,17 +132,20 @@ module.exports = {
   },
   data: async ({ request }) => {
   // The object returned here will be available in the Blog.svelte as the 'data' prop.
-  return {
-    blogpost: `This is the blogpost for the slug: ${request.slug}`.
-  }
+    return {
+      blogpost: `This is the blogpost for the slug: ${request.slug}`.
+    }
+  },
+  dynamic: false, // default
 };
 ```
 
 Here is what is happening in plain English:
 
-- `permalink()`: The permalink function is similar to your standard route definition you'd see with placeholders. This means `/blog/:slug/` would be defined as `/blog/${request.slug}/`. The permalink function's job is to take the `request` objects returned from `all` and transform them into relative urls.
-- `all()`: This async function returns an array of all of the `request` objects for a given route. Often this array may come from a data store but in this example, we're explicitly saying we only have 2 blog posts, so only two pages will be generated.
+- `all()`: This async function returns an array of all of the `request` objects for a given route. These are all of the pages that will be statically generated. Often this array may come from a data store but in this example, we're explicitly saying we only have 2 blog posts, so only two pages will be generated.
+- `permalink`: The permalink is a standard route expression such as `/blog/:slug/`. If you want complete control permalink can be a function. Basically the permalink entry takes `request` objects returned from `all` and transform them into relative urls.
 - `data()`: The data function prepares the data required in the `Blog.svelte` file. Whatever object is returned will be available as the `data` prop. In the example, we are just returning a static string, but you could also hit an external CMS, query a database, or read from the file system. Anything you can do in node, you can do here.
+- `dynamic` this controls whether in SSR mode if Elder.js should allow for parameters to be derived from the URL.
 
 In this example, we're just returning a simple object in our `data()` function, but we could have easily used `node-fetch` and gotten our blogpost from a CMS or used `fs` to read from the filesystem:
 
@@ -168,11 +155,27 @@ const blogpost = await fetch(
 ).then((res) => res.json());
 ```
 
-### Why Routing Differs from Express-like Frameworks
+### Dynamic Routing
 
-Elder.js' approach to routing is unconventional but it offers several distinct advantages, the two biggest are:
+As of Elder.js 1.4.0, dynamic routing is supported when Elder.js is used in SSR mode.
 
-1. Unlike traditional 'parameter based' routing, Elder.js' does not have to **crawl** all of the links of a site to know what pages need to be generated. This allows for fully parallelized build times that scale with CPU resources. (As of October 2020, ElderGuide.com has ~20k pages and builds in 1 minute 22 seconds.)
+This means that the url parameters will be extracted from the url `/:foo/:bar/` and made available to Elder.js.
+
+To enable this functionality add `dynamic: true` to the corresponding `route.js` file.
+
+#### Uses for Dynamic Routing
+
+Dynamic routing is useful for logged-in experiences. This allows you to use Elder.js as flexibility as you would use any `express` app.
+
+Within the `data()` function you have access to `request.req` and `next()` which are piped in directly from `express` or `polka`.
+
+This allows you to use sessions and generate pages on the fly as you would with any app.
+
+### How Routing Differs from Express-like Frameworks
+
+Elder.js' approach to routing gives you complete control offering several distinct advantages, the two biggest are:
+
+1. By allowing users to define `all` of the requests a for a route, Elder.js' does not have to **crawl** all of the links of a site to know what pages need to be generated. This allows for fully parallelized build times that scale with CPU resources. (As of October 2020, ElderGuide.com has ~20k pages and builds in 1 minute 22 seconds.)
 2. Users have full control over their URL structure. No complex regex is needed to have `/senior-living/:facilityId/` and `/senior-living/:articleId/` and `/senior-living/:parentCompanyId/`. This also makes **i18n** and **l10n** much more approachable.
 
 ### Route.js Best Practices:
@@ -206,12 +209,11 @@ Here is what a minimal route.js would look like to support `/en/spain/barcelona/
 ```javascript
 // ./src/routes/city/route.js
 module.exports = {
-  permalink: ({ request, settings }) =>
-    `/${request.lang}/${request.country.slug}/${request.slug}/`,
+  permalink: "/:lang/:country/:slug/",
   all: async () => {
     return [
-      { slug: "barcelona", country: { slug: "spain" }, lang: "en" },
-      { slug: "barcelona", country: { slug: "espana" }, lang: "es" },
+      { slug: "barcelona", country: "spain", lang: "en" },
+      { slug: "barcelona", country: "espana", lang: "es" },
     ];
   },
   data: async ({ request }) => {
@@ -226,11 +228,11 @@ Imagine for a moment that we attempted to include all of the additional details 
 
 ```javascript
 module.exports = {
-  // permalink function
+  permalink: '/:lang/:country/:slug/',
   all: async () => {
     return [
-      { slug: 'barcelona', country: { slug: 'spain' }, lang: 'en', data: { hotels: 12, attractions: 14, promotions: ['English promotion'], ...lotsOfData } },
-      { slug: 'barcelona', country: { slug: 'espana' }, lang: 'es' data: { hotels: 12, attractions: 14, promotions: ['Spanish promotion'], ...lotsOfData } }
+      { slug: 'barcelona', country: 'spain', lang: 'en', data: { hotels: 12, attractions: 14, promotions: ['English promotion'], ...lotsOfData } },
+      { slug: 'barcelona', country: 'espana', lang: 'es' data: { hotels: 12, attractions: 14, promotions: ['Spanish promotion'], ...lotsOfData } }
     ]
   }
   // data function
@@ -241,11 +243,11 @@ Now imagine your `data` function looks like so and you're getting more data.
 
 ```javascript
 module.exports = {
-  // permalink function
+  // permalink definition / function
   all: async () => {
     return [
-      { slug: 'barcelona', country: { slug: 'spain' }, lang: 'en', data: { hotels: 12, attractions: 14, promotions: ['English promotion'], ...lotsOfData } },
-      { slug: 'barcelona', country: { slug: 'espana' }, lang: 'es' data: { hotels: 12, attractions: 14, promotions: ['Spanish promotion'], ...lotsOfData } }
+      { slug: 'barcelona', country: 'spain', lang: 'en', data: { hotels: 12, attractions: 14, promotions: ['English promotion'], ...lotsOfData } },
+      { slug: 'barcelona', country: 'espana', lang: 'es' data: { hotels: 12, attractions: 14, promotions: ['Spanish promotion'], ...lotsOfData } }
     ]
   },
   data:  async ({ request }) => {
@@ -303,7 +305,7 @@ const cityLookupObject = {
 
 module.exports = {
   permalink: ({ request, settings }) =>
-    `/${request.lang}/${request.country.slug}/${request.slug}/`,
+    `/${request.lang}/${request.country.slug}/${request.slug}/`, // because we want more control we use a function for our permalink.
   all: async () => {
     return [
       { slug: "barcelona", country: { slug: "spain" }, lang: "en" },
@@ -329,7 +331,7 @@ Assuming you have populated the `data.cities` with an array of cities on the `bo
 ```javascript
 // ./src/routes/city/route.js
 module.exports = {
-  permalink: ({ request }) => `/${request.slug}/`,
+  permalink: '/:slug/', // same as ({ request }) => `/${request.slug}/`,
   all: async ({ data }) => data.cities,
   data: async ({ request, data }) => {
     return {
@@ -356,6 +358,10 @@ all: async ({ settings, query, data, helpers }): Array<Object> => {
 ```
 
 ### permalink() Function Spec
+
+**IMPORTANT:** If you are looking to use dynamic routing in SSR mode, you must use parameter based routing.
+
+If you need more control over your urls than you can get with parameter based routing (`/:slug/`) you can use a function.
 
 Here is the function signature for a `route.js` permalink function:
 
@@ -402,6 +408,8 @@ Elder.js hooks are designed to be modular, sharable, and easily bundled in to [E
 For a full overview of the hooks available, you can reference the [hookInterface.ts](https://github.com/Elderjs/elderjs/blob/master/src/hookInterface/hookInterface.ts) or the hooks list below.
 
 In short, there is a hook at every major step of the page generation process from system bootstrap (the `bootstrap` hook) all the way to writing html to your computer (on the `requestComplete` hook).
+
+This repo has a small list of common example hooks that you can use in your project: [https://github.com/Elderjs/hooks/tree/main/hooks](https://github.com/Elderjs/hooks/tree/main/hooks). Feel free to make a PR and add your hooks there.
 
 ### The Goal of Elder.js Hooks
 
@@ -859,8 +867,7 @@ module.exports = [
         html: `<div class="latest-tweet">${latestTweet}</div>`,
 
         // You can add css here and it will get written to the head.
-        css:
-          ".box{border:1px solid red; padding: 1rem; margin: 1rem 0;} .box.yellow {background: lightyellow;}",
+        css: ".box{border:1px solid red; padding: 1rem; margin: 1rem 0;} .box.yellow {background: lightyellow;}",
 
         // Javascript that is added to the footer via the customJsStack.
         js: "<script>var test = true;</script>",
@@ -971,9 +978,7 @@ module.exports = {
     // something that returns an array of the minimum required data for the route.
     return [{slug: 'why-kitten-rock'}];
   },
-  permalink: ({ request, settings }) => {
-    return `/blog/${request.slug}/`;
-  },
+  permalink: `/blog/:slug/`,
   data: async ({request, query, settings, helpers, data }) =>{
     // we'll look at this function below.
   }
