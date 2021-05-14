@@ -1,4 +1,4 @@
-# Elder.js: An Opinionated, SEO focused, Svelte Framework.
+# Elder.js: An 'SEO-First' Svelte-Based Framework
 
 <a class="github-button" href="https://github.com/elderjs/elderjs" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star elderjs/elderjs on GitHub">Star</a>
 
