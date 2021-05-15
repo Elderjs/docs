@@ -1366,18 +1366,19 @@ Note: If you really want to do data fetching and manipulation in your templates,
 
 ### Elder.js Compared to SvelteKit
 
-How Elder compares to SvelteKit is a very common question. The key distinction is that Elder.js is designed with Partial Hydration in mind and offers tools to help make building large static sites easier.
+How Elder compares to SvelteKit is a very common question. The key distinction is that Elder.js is designed with SEO in mind and offers tools to help make building large static sites easier.
 
-1. When it comes to building non-trivial static sites, there is a lot of data massaging that needs to happen and be in sync across the entire project. A good example is when reading from a headless CMS or generating a sitemap. With Elder.js, you can massage this data once and add it where you need to via a hook and it will be available on all pages. This is what enables Elder's extreme build speed, whereas SvelteKit has no data pipeline opinion.
-2. Elder.js has `shortcodes` which allow you to future proof your content.
-3. Elder.js uses `hooks` allowing your team to encapsulate much of a site's complexity in one place. These hooks also empower a growing ecosystem of plugins.
-4. Complete control over routing and url structure. SvelteKit uses file based routing which has it's benefits and limitations.
+1. Partial Hydration: Most **"modern javascript frameworks"** use client side routing which requires complete rehydration of the client. This can cause major SEO issues as [Google Bot's process for indexing javascript heavy websites](https://developers.google.com/search/docs/guides/javascript-seo-basics) differs from that of mainly static sites. This is why many javascript sites that use `react`, `vue`, `angular` and `svelte` struggle with SEO even if they are server side rendered (SSR). In our experience partial hydration results in less indexation issues for Google much like `jquery` sites of yester-year. This is why Elder.js has gone all-in on partial hydration. We believe it is a competitive SEO advantage. ([Google has a great guide on hydration](https://developers.google.com/web/updates/2019/02/rendering-on-the-web).)
+2. Data Flow: When it comes to building non-trivial static sites, there is a lot of data massaging that needs to be in sync across the entire project. A good example is when reading from a headless CMS or generating a sitemap. With Elder.js, you can organize this data once and add it where you need to via a hook and it will be available on all pages. This is what enables Elder's extreme build speed, whereas SvelteKit has no data pipeline opinion.
+3. Elder.js has `shortcodes` which allow you to future proof your content.
+4. Elder.js uses `hooks` allowing your team to encapsulate much of a site's complexity in one place. These hooks also empower a growing ecosystem of plugins.
+5. Complete control over routing and url structure. SvelteKit uses file based routing which has it's benefits and limitations.
 
 In short, Elder.js is purpose built to run flagship SEO sites with 10-100k pages.
 
 SvelteKit is not out of beta but [currently does not](https://github.com/sveltejs/kit/issues/1390) support Partial Hydration - you have to opt in/out of JS on a per-page basis, instead of per-component.
 
-SvelteKit uses vite and has a bit of a higher quality developer experience.
+SvelteKit uses Vite and HMR which result in a bit better developer experience.
 
 ### Adding Database Access
 
