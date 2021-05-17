@@ -107,6 +107,10 @@ After much consideration, we decided to open source the project so others could 
 
 We can't wait to see what you build with it.
 
+## Elder.js Community Discord
+
+Getting started with Elder.js and want to connect with other users? Join us over at the [Elder.js discord](https://discord.gg/6eP8f8df4y).
+
 ## Routes
 
 At the core of any site are its "routes" or templates.
