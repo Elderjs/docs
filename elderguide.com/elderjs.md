@@ -109,7 +109,7 @@ We can't wait to see what you build with it.
 
 ## Elder.js Community Discord
 
-Getting started with Elder.js and want to connect with other users? Join us over at the [Elder.js discord](https://discord.gg/6eP8f8df4y).
+Getting started with Elder.js and want to connect with other users? Join us over at the [Elder.js channel](https://discord.gg/rxc2yh5Pxa) within the official Svelte discord.
 
 ## Routes
 
