@@ -454,7 +454,7 @@ This structure was implemented to keep mutation and side effects predictable.
 
 ### Hook Lifecycle
 
-<img src="https://elderguide.com/images/elderjs-hooks-v100.png" alt="Elder.js hook Lifecycle" style="max-width:100%; margin:1rem 0;" />
+<img src="https://elderguide.com/images/elderjs-hook-lifecycle-v13.png" alt="Elder.js hook Lifecycle v1.3" style="max-width:100%; margin:1rem 0;" />
 
 ### Hook List
 
@@ -1043,9 +1043,9 @@ request = {
 
 It is important to note that all of the params of the 'request' objects returned by the `all` function will be present in the 'request' object even though our example only uses `slug`.
 
-#### 5. Hooks are Executed Until the `data` function is Executed
+#### 5. Hooks are Executed Until the Route's `data` function
 
-The data flows through all of the hooks until it reaches a route's `data` function.
+The data flows through all of the hooks (as shown above) until it reaches a route's `data` function which is run just before the `data` hook.
 
 How you modify the data in your `data` function is up to you. Anything you can do in Node.js, you can do here.
 
