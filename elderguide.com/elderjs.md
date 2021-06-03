@@ -592,6 +592,7 @@ Here is what a plugin looks like:
 const plugin: PluginOptions = {
   name: "elder-plugin-upload-s3",
   description: "Uploads html and/or data.json file to s3",
+  minimumElderjsVersion: "1.4.13", // minimum required Elder.js version. You can leave blank.
   init: (plugin) => {
     // console.log(plugin); => returns this plugin object.
     plugin.data = { test: true };
