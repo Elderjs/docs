@@ -162,9 +162,7 @@ Here is what is happening in plain English:
 In this example, we're just returning a simple object in our `data()` function, but we could have easily used `node-fetch` and gotten our blogpost from a CMS or used `fs` to read from the filesystem:
 
 ```javascript
-const blogpost = await fetch(
-  `https://api.mycms.com/getBySlug/${request.slug}/`
-).then((res) => res.json());
+const blogpost = await fetch(`https://api.mycms.com/getBySlug/${request.slug}/`).then((res) => res.json());
 ```
 
 ### Dynamic Routing
@@ -568,6 +566,7 @@ To use a plugin, it must be registered in your `elder.config.js` and can be load
 - [Sitemap](https://github.com/Elderjs/plugins/tree/master/packages/sitemap) Automatically generate the latest sitemap for your Elder.js website on build.
 - [Browser Reload](https://github.com/Elderjs/plugins/tree/master/packages/browser-reload) Reload the browser when your Elder.js server restarts.
 - [References](https://github.com/Elderjs/plugins/tree/master/packages/references) Easily add wikipedia style references to your content with `ref` and `referenceList` shortcodes.
+- [Random](https://github.com/Elderjs/plugins/tree/master/packages/random) Easily preview a random page of a route by visiting a single url speeding up design and debugging of large sites.
 
 ### Other Plugin Ideas:
 
@@ -617,12 +616,7 @@ const plugin: PluginOptions = {
             if (plugin.config.deployId) {
               dest = `${plugin.config.deployId}/${dest}`;
             }
-            await s3Helper.uploadToS3(
-              dest,
-              JSON.stringify(data),
-              "application/json",
-              plugin.config.dataBucket
-            );
+            await s3Helper.uploadToS3(dest, JSON.stringify(data), "application/json", plugin.config.dataBucket);
           }
         }
       },
@@ -640,12 +634,7 @@ const plugin: PluginOptions = {
               dest = `${plugin.config.deployId}/${dest}`;
             }
 
-            await s3Helper.uploadToS3(
-              dest,
-              html,
-              "text/html",
-              plugin.config.htmlBucket
-            );
+            await s3Helper.uploadToS3(dest, html, "text/html", plugin.config.htmlBucket);
           }
         }
       },
