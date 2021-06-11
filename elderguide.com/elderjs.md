@@ -789,7 +789,7 @@ Imagine you want to empower the content team to embed a Svelte `widget` componen
 
 Out of the box, Elder.js adds a shortcode for this.
 
-Simply tell them to add `{{svelteComponent name="widget" props="{blue: true}" /}}` to their markup and Elder.js will hydrate and mount that component.
+Simply tell them to add `{{svelteComponent name='ComponentName' props='{"comment": "new comment"}' options='{}'/}}` to their markup and Elder.js will hydrate and mount that component.
 
 **Adding custom HTML to style/wrap content or achieve design goals.**
 
