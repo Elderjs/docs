@@ -1553,3 +1553,7 @@ If you have a component above the fold that **must** be hydrated right away, we 
 #### Dropping IE11 and `legacy` support
 
 IE11 is on it's way out. We worked to support it, but currently we don't have a business case for it so we can't justify the maintenance burden. If your team relies on Elder.js for ie11 support and are interested in maintaining it, please let Nick Reese know.
+
+#### claim_html_tag issues
+
+If you see the error: `No matching export in "node_modules/svelte/internal/index.mjs" for import "claim_html_tag"` make sure the `svelte` package in your project is updated.
