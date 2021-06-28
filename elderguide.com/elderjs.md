@@ -14,6 +14,7 @@
 - **Shortcodes:** Future proof your content, whether it lives in a CMS or in static files using smart placeholders. These shortcodes can be async!
 - **0KB JS**: Defaults to 0KB of JS if your page doesn't need JS.
 - **Partial Hydration**: Unlike most frameworks, Elder.js lets you hydrate just the parts of the client that need to be interactive allowing you to dramatically reduce your payloads while still having full control over component lazy-loading, preloading, and eager-loading.
+- **esbuild**: Blazing fast reloads during development. (This we consider this experimental until esbuild is stable).
 
 **Project Status: Stable**
 
@@ -714,7 +715,7 @@ The environment variable 'process.env.componentType' will return `browser` or `s
 
 To give you fine grained control over how a Svelte component behaves when it is mounted, the following `hydrate-options` can be defined:
 
-- `hydrate-options={{ loading: 'lazy' }}` This is the default config, uses intersection observer to 'lazily' mount the Svelte component.
+- `hydrate-options={{ loading: 'lazy'}}` This is the default config, which uses intersection observer + [requestIdleCallback](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) with 1000ms timeout to 'lazily' mount the Svelte component.
 - `hydrate-options={{ loading: 'eager' }}` This would cause the component to be hydrated in a blocking manner as soon as the js is rendered.
 - `hydrate-options={{ loading: 'none' }}` This allows you to add the HTML from a Svelte component, but not to hydrate it on the client. (only really useful with `helpers.inlineSvelteComponent` and possibly advanced shortcode usages.)
 - `hydrate-options={{ preload: true }}` This adds a preload to the head stack as outlined above... could be preloaded without forcing blocking.
@@ -746,6 +747,64 @@ Later when we go to render these templates, we look for the removed components, 
 If you are curious, the files to look at are: `partialHydration.ts` and `svelteComponent.ts.`
 
 The important thing to note is that still use Svelte variables in `hydrate-client` as long as they can be processed by `JSON.stringify`.
+
+### Prop Hydration
+
+Elder.js by default writes props to the HTML if they are under 2kb. If they are greater than 2kb then it is written to an external file. We call this `hybride` prop hydration.
+
+You can have finer grained control by setting `props.hydration` key your `elder.config.js` to: `hybrid`, `html`, and `file`.
+
+- `hybrid` writes prop payloads over 2kb to an external file.
+- `html` writes all prop payloads to the html.
+- `file` write all prop payloads to an external file.
+
+### Prop Compression
+
+When hydrating data heavy components such as tables, maps, graphs often you are required to write a huge amount of data to the HTML or prop file. This is made worse when there are multiple data heavy components on the same page.
+
+Historically you'd need to write custom code to compress/decompress your data on both the server and the client.
+
+With Elder.js' prop compression, Elder.js will generate custom packing and unpacking code for each page.
+
+To see the power of this, let's imaging we were hydrating the entire Elder.js' "Hook Interface" to add some interactivity to our pages. Below are the first 3 records uncompressed and compressed.
+
+```js
+  const uncompressed = [
+    { props: ['hookInterface', 'errors'], hook: 'customizeHooks' },
+    { props: ['helpers', 'data', 'settings', 'routes', 'hooks', 'query', 'errors'], hook: 'bootstrap' },
+    { props: ['helpers', 'data', 'settings', 'allRequests', 'routes', 'query', 'errors'], hook: 'allRequests' },
+    ...
+  ];
+
+  const compressed = [
+    { $: ['o', 'c'], a: 'customizeHooks' },
+    { $: ['e', 'b', 'd', 'h', 'hooks', 'f', 'c'], a: 'bootstrap' },
+    { $: ['e', 'b', 'd', 'i', 'h', 'f', 'c'], a: 'i' },
+    ...
+  ];
+```
+
+While 3 records doesn't make a huge difference the uncompressed hookInterface is 2,664 bytes while the compressed (including the decompression code) is 1,951 bytes.
+
+#### How it Works
+
+As Elder.js is hydrating the props, it loops through the props looking for repeated primitives (string, number, booleans, etc). Where it finds repeated primitives it adds a placeholder.
+
+Then it builds a custom decompression 'dictionary' so that when the client loads the props, it can loop through the compressed object and restore the original values.
+
+_NOTE:_ The largest gains from prop compression come from compression props with the same 'dictionary' across all of the components on a page.
+
+#### Demo
+
+To demo this on production website visit [FindEnergy's Texas Electric Page](https://findenergy.com/tx/) and check out the unpack code and props. With the compression code turned on we've seen prop size drop by ~40% before brotli compression and ~10% after brotli compression.
+
+## Options:
+
+To enable prop compression set `props.compression: true` within your `elder.config.js`.
+
+You can also set your own compression characters by setting `props.replacementChars = 'abcdefg'`.
+
+You can also see the savings in string length by enabling `debug.props` in your `elder.config.js`.
 
 ### Slots
 
@@ -1321,6 +1380,20 @@ You should be able to use typescript in svelte files by following the instructio
 
 **Typescript support for non-svelte files is coming soon, track the [progress here](https://github.com/Elderjs/elderjs/pull/72)**
 
+## Esbuild
+
+**EXPERIMENTAL! This could change!**
+
+With Elder.js v1.5 we introduced an experimental development bundler running on `esbuild`.
+
+Using this we've seen development reloads drop from 11s to ~1s.
+
+To use it esbuild, clone the latest template and run `npm run esbuild` where you'd usually run `npm run dev`.
+
+There are still some minor bugs we are working through, but it has been a dramatic improvement for our development team.
+
+As `esbuild` becomes stable our plan is to move away from `rollup` for bundling and use `esbuild` or `vite` exclusively.
+
 ## FAQ
 
 ### How can I disable a hook?
@@ -1460,3 +1533,23 @@ const svelteConfig = require("./svelte.config");
 
 module.exports = [...getRollupConfig({ svelteConfig })];
 ```
+
+### Upgrading from v1.4.# ~> v1.5.0
+
+#### Partial Hydration Changes:
+
+v1.5.0 has a breaking change in the default way svelte components are hydrated.
+
+In our development of several projects with Elder.js we've found that using `window.addEventListener('load', ()=>{})` to bootstrap the `IntersectionObserver` can result in **First Input Delay (FID)** of greater than 200ms on pages with many hydrated components.
+
+To remedy this situation, Elder.js will now use `RequestIdleCallback` to bootstrap the `IntersectionObserver`. If you are unfamiliar with `RequestIdleCallback` it allows the browser to run a callback when the event loop is idle or when a `timeout` is set. Whichever comes first. Elder.js's default `timeout` is set to `1000`ms.
+
+**This means that if the main loop is blocked for `1000`ms your components may not be mounted until then with the default Elder.js config**.
+
+Since Elder.js is an SEO-first framework, we believe this is a sensible default as Web Vitals are now a ranking signal.
+
+If you have a component above the fold that **must** be hydrated right away, we recommend using `<Component hydrate-client={{props}} hydrate-options={{loading : 'eager'}} />`.
+
+#### Dropping IE11 and `legacy` support
+
+IE11 is on it's way out. We worked to support it, but currently we don't have a business case for it so we can't justify the maintenance burden. If your team relies on Elder.js for ie11 support and are interested in maintaining it, please let Nick Reese know.
