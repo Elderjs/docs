@@ -1452,6 +1452,9 @@ Svelte configuration
 
 const sveltePreprocess = require('svelte-preprocess');
 
+// It is recommended to purge only in production environments
+const isProd = process.env.NODE_ENV === 'production';
+
 module.exports = {
   preprocess: [
     sveltePreprocess({
@@ -1459,7 +1462,7 @@ module.exports = {
         plugins: [
           require('postcss-import')(),
           require('autoprefixer'),
-          require('@fullhuman/postcss-purgecss')({
+          isProd && require('@fullhuman/postcss-purgecss')({
             content: ['./src/**/*.svelte'],
             safelist: { greedy: [/svelte-/] },
             extractors: [
