@@ -1010,6 +1010,12 @@ export let helpers;
 
 This results in `{{shortcodeName background="blue"}}Inner content{{/shortcodeName}}` being output in the HTML and picked up by the shortcode parser during the page generation process.
 
+### Escaping a Shortcode
+
+In some cases, you may not want a specific shortcode to be processed. For example, if you are writing a blog post with code samples that include your shortcode open and close pattern, you will not want Elder.js to modify that text. As a workaround, Elder.js supports escaping a shortcode. By placing a backslash immediately in front of the shortcode open pattern, that shortcode will be left alone, and the text will display on your page as-is.
+
+Example: `\{{this is not a shortcode}}` will render as `{{this is not a shortcode}}`, instead of throwing an error and being replaced by `{{!this!}}` if the leading backslash was omitted.
+
 ## CSS
 
 Elder.js has 4 different modes of handling CSS each of which can be set in your `elder.config.js` by settings the desired value on the `css` key.
