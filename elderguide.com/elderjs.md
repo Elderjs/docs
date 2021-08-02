@@ -1424,6 +1424,70 @@ By default Elder.js emits hashed files for assets under its control into the `./
 
 This allows for aggressive caching of client side assets such as `cache-control public, max-age=31536000, immutable`.
 
+### Integrate PurgeCss with Elder.js
+
+If you want to purge unused CSS to reduce your bundle size, you can do it with the help of [@fullhuman/postcss-purgecss](https://github.com/FullHuman/purgecss). You will also need to use [postcss-import](https://github.com/postcss/postcss-import) to use the `@import 'my/css/file.css` statements within the `<style>` block of your svelte components.
+
+**NOTE:** You need to import your CSS within your `<style>` block so that @fullhuman/postcss-purgecss can purge your unused CSS. **Importing the CSS within your `<script>` block will not purge any CSS at all.**
+
+**Example:**
+
+Component importing your styles
+
+```javascript
+// src/layouts/Layout.svelte
+<script>
+  // Importing CSS here will not purge unused classes.
+  import "../../assets/css/to/purge" // won't be purged
+  import "bulma/css/bulma.css" // won't be purged`
+</script>
+
+<style>
+  /* Importing here will effectively purge unused CSS */
+  @import "../../assets/css/to/purge";
+  @import "bulma/css/bulma.css";
+<style>
+
+<section class="hero">...</section>
+```
+
+Svelte configuration
+
+```javascript
+// svelte.config.js
+
+const sveltePreprocess = require('svelte-preprocess');
+
+// It is recommended to purge only in production environments
+const isProd = process.env.NODE_ENV === 'production';
+
+module.exports = {
+  preprocess: [
+    sveltePreprocess({
+      postcss: {
+        plugins: [
+          require('postcss-import')(),
+          require('autoprefixer'),
+          isProd && require('@fullhuman/postcss-purgecss')({
+            content: ['./src/**/*.svelte'],
+            safelist: { greedy: [/svelte-/] },
+            extractors: [
+              {
+                extractor: (content) => [
+                  ...(content.match(/[^<>"'`\s]*[^<>"'`\s:]/g) || []),
+                  ...(content.match(/(?<=class:)[^=>\/\s]*/g) || []),
+                ],
+                extensions: ['svelte'],
+              },
+            ],
+          }),
+        ],
+      },
+    }),
+  ],
+};
+```
+
 ### How can I copy files to public?
 
 The [template project has a hook](https://github.com/Elderjs/template/blob/master/src/hooks.js) that copies your `./assets/` folder to the `distDir` location defined in your `elder.config.js`.
