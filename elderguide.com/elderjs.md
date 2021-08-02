@@ -720,7 +720,7 @@ To give you fine grained control over how a Svelte component behaves when it is 
 - `hydrate-options={{ loading: 'none' }}` This allows you to add the HTML from a Svelte component, but not to hydrate it on the client. (only really useful with `helpers.inlineSvelteComponent` and possibly advanced shortcode usages.)
 - `hydrate-options={{ preload: true }}` This adds a preload to the head stack as outlined above... could be preloaded without forcing blocking.
 - `hydrate-options={{ preload: true, loading: 'eager' }}` This would preload and be blocking.
-- `hydrate-options={{ rootMargin: '500px', threshold: 0 }}` This would adjust the root margin of the intersection observer. Only usable with loading: 'lazy'
+- `hydrate-options={{ noPrefetch: true }}` turns off prefetching.
 
 ### How partial hydration works under the covers.
 
@@ -742,7 +742,7 @@ At a high level, what is happening is that when the Svelte template components a
 
 Later when we go to render these templates, we look for the removed components, generate the server rendered version and include the client component in the generated JS with the props that were given in `hydrate-client`.
 
-> Security Note: Whatever you pass to `hydrate-client` will get written to the HTML shipped to the browser via [`devalue`](https://github.com/Rich-Harris/devalue). There are XSS and security considerations of passing data to the client.
+> Security Note: Whatever you pass to `hydrate-client` will get written to the HTML shipped to the browser via `JSON.stringify`. There are XSS and security considerations of passing data to the client, only hydrate content you trust.
 
 If you are curious, the files to look at are: `partialHydration.ts` and `svelteComponent.ts.`
 
@@ -750,7 +750,7 @@ The important thing to note is that still use Svelte variables in `hydrate-clien
 
 ### Prop Hydration
 
-Elder.js by default writes props to the HTML if they are under 2kb. If they are greater than 2kb then it is written to an external file. We call this `hybride` prop hydration.
+Elder.js by default writes props to the HTML if they are under 2kb. If they are greater than 2kb then it is written to an external file. We call this `hybrid` prop hydration.
 
 You can have finer grained control by setting `props.hydration` key your `elder.config.js` to: `hybrid`, `html`, and `file`.
 
@@ -1456,31 +1456,32 @@ Svelte configuration
 ```javascript
 // svelte.config.js
 
-const sveltePreprocess = require('svelte-preprocess');
+const sveltePreprocess = require("svelte-preprocess");
 
 // It is recommended to purge only in production environments
-const isProd = process.env.NODE_ENV === 'production';
+const isProd = process.env.NODE_ENV === "production";
 
 module.exports = {
   preprocess: [
     sveltePreprocess({
       postcss: {
         plugins: [
-          require('postcss-import')(),
-          require('autoprefixer'),
-          isProd && require('@fullhuman/postcss-purgecss')({
-            content: ['./src/**/*.svelte'],
-            safelist: { greedy: [/svelte-/] },
-            extractors: [
-              {
-                extractor: (content) => [
-                  ...(content.match(/[^<>"'`\s]*[^<>"'`\s:]/g) || []),
-                  ...(content.match(/(?<=class:)[^=>\/\s]*/g) || []),
-                ],
-                extensions: ['svelte'],
-              },
-            ],
-          }),
+          require("postcss-import")(),
+          require("autoprefixer"),
+          isProd &&
+            require("@fullhuman/postcss-purgecss")({
+              content: ["./src/**/*.svelte"],
+              safelist: { greedy: [/svelte-/] },
+              extractors: [
+                {
+                  extractor: (content) => [
+                    ...(content.match(/[^<>"'`\s]*[^<>"'`\s:]/g) || []),
+                    ...(content.match(/(?<=class:)[^=>\/\s]*/g) || []),
+                  ],
+                  extensions: ["svelte"],
+                },
+              ],
+            }),
         ],
       },
     }),
