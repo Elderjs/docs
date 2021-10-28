@@ -166,6 +166,8 @@ In this example, we're just returning a simple object in our `data()` function, 
 const blogpost = await fetch(`https://api.mycms.com/getBySlug/${request.slug}/`).then((res) => res.json());
 ```
 
+**Note:** version 3 for the `node-fetch` library is a pure ESM package and no longer compatible with elderjs. Therefore make sure you install version 2 instead, for example with `npm install node-fetch@^2.6.5`. They will keep updating v2 with bug and security issues, see this [issue](https://github.com/node-fetch/node-fetch/issues/1279) for more details. 
+
 ### Dynamic Routing
 
 As of Elder.js 1.4.0, dynamic routing is supported when Elder.js is used in SSR mode.
@@ -476,7 +478,7 @@ Internally, Elder.js uses this hook to automatically any user defined helpers `.
 
 ```javascript
 // ./src/hooks.js
-const fetch = require('node-fetch');
+const fetch = require('node-fetch'); // node-fetch@^2.6.5
 module.exports = [
   {
     hook: 'bootstrap',
@@ -924,7 +926,7 @@ You setup the `{{latestTweet /}}` shortcode and instead of just returning the la
 Here is the full power of how you'd implement this:
 
 ```javascript
-// import 'node-fetch', 'axios'
+// import 'node-fetch@^2.6.5', 'axios'
 // ./src/shortcodes.js
 module.exports = [
   {
