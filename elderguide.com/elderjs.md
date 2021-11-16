@@ -800,7 +800,7 @@ _NOTE:_ The largest gains from prop compression come from compression props with
 
 To demo this on production website visit [FindEnergy's Texas Electric Page](https://findenergy.com/tx/) and check out the unpack code and props. With the compression code turned on we've seen prop size drop by ~40% before brotli compression and ~10% after brotli compression.
 
-## Options:
+#### Options:
 
 To enable prop compression set `props.compression: true` within your `elder.config.js`.
 
