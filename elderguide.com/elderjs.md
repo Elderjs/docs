@@ -166,7 +166,7 @@ In this example, we're just returning a simple object in our `data()` function, 
 const blogpost = await fetch(`https://api.mycms.com/getBySlug/${request.slug}/`).then((res) => res.json());
 ```
 
-**Note:** version 3 for the `node-fetch` library is a pure ESM package and no longer compatible with elderjs. Therefore make sure you install version 2 instead, for example with `npm install node-fetch@^2.6.5`. They will keep updating v2 with bug and security issues, see this [issue](https://github.com/node-fetch/node-fetch/issues/1279) for more details. 
+**Note:** version 3 for the `node-fetch` library is a pure ESM package and no longer compatible with elderjs. Therefore make sure you install version 2 instead, for example with `npm install node-fetch@^2.6.5`. They will keep updating v2 with bug and security issues, see this [issue](https://github.com/node-fetch/node-fetch/issues/1279) for more details.
 
 ### Dynamic Routing
 
@@ -1338,10 +1338,9 @@ const svelteConfig = require("./svelte.config");
 module.exports = [
   ...getRollupConfig({
     svelteConfig,
-    rollupConfig: {
-      replacements: { "http://localhost:4020": "https://production.com" },
-      // object keys are replaced by values.
-    },
+    // object keys are replaced by values.
+    replacements: { "http://localhost:4020": "https://production.com" },
+    rollupConfig: {},
   }),
 ];
 ```
