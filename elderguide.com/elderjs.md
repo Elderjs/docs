@@ -1304,7 +1304,7 @@ By default, Elder.js adds a few items to the `helpers` object that is available 
 
 ### Elder.js Exports:
 
-#### `server`
+#### server
 
 Elder.js was built as a static site generator, but it offers a built-in server that is pretty snappy past the initial bootstrap phase.
 
@@ -1312,7 +1312,7 @@ This can be used to power server rendered (SSR) apps or used to preview the outp
 
 You can see how this functionality is utilized in the [`elderjs-template`](https://github.com/Elderjs/template/blob/master/src/server.js).
 
-#### `build`
+#### build
 
 The `build` function exported from Elder.js uses Node's cluster module to use multiple processes to build your site.
 
@@ -1322,7 +1322,7 @@ The main process runs through bootstrap and collects `allRequests`. It then spin
 
 There are two notable config options: `numberOfWorkers` and `shuffleRequests` which you can read about in the config section.
 
-#### `getRollupConfig`
+#### getRollupConfig
 
 A function that generates all of the Elder.js required `rollup` output.
 
@@ -1345,7 +1345,7 @@ module.exports = [
 ];
 ```
 
-#### `getElderConfig`
+#### getElderConfig
 
 A helper function that returns the user's `elder.config.js` with defaults added in where they aren't defined.
 
