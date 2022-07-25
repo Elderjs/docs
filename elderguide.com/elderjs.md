@@ -472,7 +472,7 @@ ___output_bootstrap_hook___;
 
 This hook is executed after Elder.js has bootstrapped itself and lets users run arbitrary functions at that point too.
 
-Internally, Elder.js uses this hook to automatically any user defined helpers `./src/helpers/index.js` to the `helpers` prop that is available on other hooks, in Svelte templates, and `data` functions.
+Internally, Elder.js uses this hook to automatically add any user defined helpers from `./src/helpers/index.js` to the `helpers` prop which is available in other hooks, Svelte templates, and `data` functions.
 
 #### Fetching External Data
 
