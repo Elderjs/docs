@@ -14,7 +14,7 @@
 - **Shortcodes:** Future proof your content, whether it lives in a CMS or in static files using smart placeholders. These shortcodes can be async!
 - **0KB JS**: Defaults to 0KB of JS if your page doesn't need JS.
 - **Partial Hydration**: Unlike most frameworks, Elder.js lets you hydrate just the parts of the client that need to be interactive allowing you to dramatically reduce your payloads while still having full control over component lazy-loading, preloading, and eager-loading.
-- **esbuild**: Blazing fast reloads during development. (This we consider this experimental until esbuild is stable).
+- **esbuild**: Blazing fast reloads during development. (We consider this experimental until esbuild is stable).
 
 **Project Status: Stable**
 
